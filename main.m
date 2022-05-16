@@ -1,0 +1,73 @@
+clear all; close all; clc;
+%  SYSTEM DEFINITIONS  %
+
+% define system constants
+global K D a_21 P_ref ws
+K = 8.73e-7;
+D = 0.18*K;
+P_ref = 4e6;
+ws = 50*2*pi;
+a_21 = (12e3)^2 * abs(-1/(0.288 + 1j*ws*0.0275));
+
+% define boundaries
+omega_min = 49*2*pi; % rad/sec
+omega_max = 50*2*pi; % rad/sec
+delta_min = -pi / 2; % rad
+delta_max = pi / 2; % rad
+
+% define resolutions
+omega_res = 0.1;
+delta_res = 0.1;
+
+% define Jacobian formula
+J = @(d, w) [0 1; -3 * K * a_21 * cos(w) -K / D];
+
+% define numerical grid
+[delta_2, omega_2] = meshgrid(delta_min:delta_res:delta_max, omega_min:omega_res:omega_max);
+
+%  ALGORITHM  %
+
+% 1. Solve the power flow for the system (the solution is an equilibrium point of the dynamics).
+equilibrium_points = solve_power_flow();
+assert(~isempty(equilibrium_points), "The power flow system does not have a solution.")
+
+for i = 1:size(equilibrium_points, 2)
+    fprintf("Evaluate equilibrium point (%d,%d) \n", equilibrium_points{i}(1), equilibrium_points{i}(2));
+    % 2. Evaluate the Jacobian at the equilibrium point.
+    args = num2cell(equilibrium_points{i}); % use the equilibrium point as argument list
+    J_eq = J(args{:});
+
+    % 3. Check that the equilibrium point is stable (by checking the eigenvalues of the Jacobian there).
+    eigenvalues = eig(J_eq);
+
+    % 4. If it is not stable, stop
+    assert(max(real(eigenvalues)) < 0, "The equilibrium point is  not stable.");
+
+    % 5. Solve the Lyapunov equation at the equilibrium point using MATLAB’s lyap, using Q = I.
+    Q = eye(ndims(J_eq));
+    P = lyap(J_eq, Q);
+
+    % 6. Find the square root of the result of lyap using sqrtm. The transformation we will use to define the weighted Euclidean norm is the inverse of the square root.
+    T = sqrtm(P);
+    A = @(d,w) (T^(-1) * J(d,w) * T);
+
+    % 7. Use meshgrid to define a discrete grid over the state-space, and at each point of the grid calculate the matrix measure induced by the weighted Euclidean norm.
+    % TODO make grid_matmis generic for any mesh grid
+    mu_matrix_L1 = grid_matmis(A, delta_2, omega_2, 'L1');
+    mu_matrix_L2 = grid_matmis(A, delta_2, omega_2, 'L2');
+    mu_matrix_Linf = grid_matmis(A, delta_2, omega_2, 'Linf');
+
+    % 8. Use contour (or any other function of your choice) to draw the boundary of the convergence, that is, the line along which the matrix measure is zero.
+    % TODO calculate distances function and convert it back to the original norm
+    % TODO plot for all mu
+    dist = sqrt(delta_2.^2 + omega_2.^2);
+    plot_contraction(delta_2, omega_2, mu_matrix_L1, dist, equilibrium_points{i});
+end
+
+% for base example, don't need to solve it just return the known points
+function equilibrium_points = solve_power_flow()
+    global P_ref a_21
+    equilibrium_points = cell([1, 2]);
+    equilibrium_points{1} = [1 / (sin(P_ref / a_21)), 0]; % (delta,omega) point
+    equilibrium_points{2} = [pi - 1 / (sin(P_ref / a_21)), 0]; % (delta,omega) point
+end
