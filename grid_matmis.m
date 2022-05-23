@@ -1,4 +1,4 @@
-% gives the matrix measure of any point of mesh greid
+% gives the matrix measure of any point of mesh grid
 function MU = grid_matmis(func_A, delta_2, omega_2, L)
     [x_size,y_size] = size(delta_2); 
     MU = zeros(x_size, y_size);

@@ -20,7 +20,7 @@ omega_res = 0.1;
 delta_res = 0.1;
 
 % define Jacobian formula
-J = @(d, w) [0 1; -3 * K * a_21 * cos(w) -K / D];
+J = @(d, w) [0 1; -3 * K * a_21 * cos(d) -K / D];
 
 % define numerical grid
 [delta_2, omega_2] = meshgrid(delta_min:delta_res:delta_max, omega_min:omega_res:omega_max);
@@ -41,7 +41,10 @@ for i = 1:size(equilibrium_points, 2)
     eigenvalues = eig(J_eq);
 
     % 4. If it is not stable, stop
-    assert(max(real(eigenvalues)) < 0, "The equilibrium point is  not stable.");
+    if max(real(eigenvalues)) < 0
+        fprintf("The equilibrium point is  not stable.");
+        continue;
+    end
 
     % 5. Solve the Lyapunov equation at the equilibrium point using MATLAB’s lyap, using Q = I.
     Q = eye(ndims(J_eq));
@@ -49,7 +52,7 @@ for i = 1:size(equilibrium_points, 2)
 
     % 6. Find the square root of the result of lyap using sqrtm. The transformation we will use to define the weighted Euclidean norm is the inverse of the square root.
     T = sqrtm(P);
-    A = @(d,w) (T^(-1) * J(d,w) * T);
+    A = @(d,w) (T * J(d,w) * T^(-1));
 
     % 7. Use meshgrid to define a discrete grid over the state-space, and at each point of the grid calculate the matrix measure induced by the weighted Euclidean norm.
     % TODO make grid_matmis generic for any mesh grid
