@@ -29,10 +29,11 @@ legend ('L1','L2','Linf')
 mu_matrix_cozen = mu_matrix(:,2)';
 mu_matrix_cozen = repmat(mu_matrix_cozen,length(omega),1);
 figure(2)
-hold on
-contourf (delta,omega,-mu_matrix_cozen,[0,0])
+contourf (delta,omega,- ...
+    mu_matrix_cozen,[0,0])
 xlabel('delta')
 ylabel('omega')
+
 
 %{
 [x,y] = meshgrid(-5:0.1:5);
