@@ -1,20 +1,22 @@
 close all;
 clc;
 
-K = 1;
-D = 1;
-a_12 = 1;
+K = 8.73e-7;
+D = 0.18*K;
+P_ref = 4e6;
+ws = 50*2*pi;
+a_12 = (12e3)^2 * abs(-1/(1j*ws*0.0275));
 w_res = 0.1;
 d_res = 0.1;
-delta = linspace(0,2*pi);
-omega = linspace(48,50);
+delta = linspace(-pi/2,pi/2,1000);
+omega = linspace(49.8,50.2,5);
 N=length(delta);
 mu_matrix = zeros(N,3);
 %
 for row=1:N
-mu_matrix(row,1) = mu_lyaponov_one_gen (delta(row),K,D,a_12,'L1');
+% mu_matrix(row,1) = mu_lyaponov_one_gen (delta(row),K,D,a_12,'L1');
 mu_matrix(row,2) = mu_lyaponov_one_gen (delta(row),K,D,a_12,'L2');
-mu_matrix(row,3) = mu_lyaponov_one_gen (delta(row),K,D,a_12,'Linf');
+% mu_matrix(row,3) = mu_lyaponov_one_gen (delta(row),K,D,a_12,'Linf');
 end
 mu_matrix = real(mu_matrix);
 
@@ -49,12 +51,16 @@ hold off;
 %}
 
 function mu_matrix = mu_lyaponov_one_gen (delta,K,D,a_12,L)
-    J = [-K/D -cos(delta)*3*a_12*K;
-        1 0];
+%     J = [-K/D -cos(delta)*3*a_12*K;
+%         1 0];
+    J = [0, 1; -cos(2.423481e-01)*3*a_12*K,-K/D];
     Q = eye(2);
     P = lyap (J,Q);
+    je =eig(J);
+    e = eig(P);
     sqrt_P = sqrtm(P);
-    A = sqrt_P*J*sqrt_P^(-1);
+    J = [0, 1; -cos(delta)*3*a_12*K,-K/D];
+    A = sqrt_P^(-1)*J*sqrt_P;
     mu_matrix = matmis (A,L);
 end
 
@@ -101,4 +107,4 @@ end
 
 
 
-
+ 

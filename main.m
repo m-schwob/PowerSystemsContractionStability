@@ -7,11 +7,11 @@ K = 8.73e-7;
 D = 0.18*K;
 P_ref = 4e6;
 ws = 50*2*pi;
-a_21 = (12e3)^2 * abs(-1/(0.288 + 1j*ws*0.0275));
+a_21 = (12e3)^2 * abs(-1/(1j*ws*0.0275));
 
 % define boundaries
-omega_min = 49*2*pi; % rad/sec
-omega_max = 50*2*pi; % rad/sec
+omega_min = 49.8*2*pi; % rad/sec
+omega_max = 50.2*2*pi; % rad/sec
 delta_min = -pi / 2; % rad
 delta_max = pi / 2; % rad
 
@@ -20,7 +20,7 @@ omega_res = 0.1;
 delta_res = 0.1;
 
 % define Jacobian formula
-J = @(d, w) [0 1; -3 * K * a_21 * cos(d) -K / D];
+J = @(d, w) [0, 1; -3 * K * a_21 * cos(d), -K / D];
 
 % define numerical grid
 [delta_2, omega_2] = meshgrid(delta_min:delta_res:delta_max, omega_min:omega_res:omega_max);
@@ -41,7 +41,7 @@ for i = 1:size(equilibrium_points, 2)
     eigenvalues = eig(J_eq);
 
     % 4. If it is not stable, stop
-    if max(real(eigenvalues)) < 0
+    if max(real(eigenvalues)) > 0
         fprintf("The equilibrium point is  not stable.");
         continue;
     end
@@ -52,25 +52,29 @@ for i = 1:size(equilibrium_points, 2)
 
     % 6. Find the square root of the result of lyap using sqrtm. The transformation we will use to define the weighted Euclidean norm is the inverse of the square root.
     T = sqrtm(P);
-    A = @(d,w) (T * J(d,w) * T^(-1));
+    A = @(d,w) (T^(-1) * J(d,w) * T);
 
     % 7. Use meshgrid to define a discrete grid over the state-space, and at each point of the grid calculate the matrix measure induced by the weighted Euclidean norm.
     % TODO make grid_matmis generic for any mesh grid
-    mu_matrix_L1 = grid_matmis(A, delta_2, omega_2, 'L1');
-    mu_matrix_L2 = grid_matmis(A, delta_2, omega_2, 'L2');
-    mu_matrix_Linf = grid_matmis(A, delta_2, omega_2, 'Linf');
+%     mu_matrix_L1 = grid_matmis(A, delta_2, omega_2, 'L1');
+      mu_matrix_L2 = grid_matmis(A, delta_2, omega_2, 'L2');
+%     mu_matrix_Linf = grid_matmis(A, delta_2, omega_2, 'Linf');
 
     % 8. Use contour (or any other function of your choice) to draw the boundary of the convergence, that is, the line along which the matrix measure is zero.
     % TODO calculate distances function and convert it back to the original norm
     % TODO plot for all mu
     dist = sqrt(delta_2.^2 + omega_2.^2);
-    plot_contraction(delta_2, omega_2, mu_matrix_L1, dist, equilibrium_points{i});
+    plot_contraction(delta_2, omega_2, mu_matrix_L2, dist, equilibrium_points{i});
+    figure;
+    hold on;
+    plot(delta_2,mu_matrix_L2(1,:));
+    hold off;
 end
 
 % for base example, don't need to solve it just return the known points
 function equilibrium_points = solve_power_flow()
     global P_ref a_21
     equilibrium_points = cell([1, 2]);
-    equilibrium_points{1} = [1 / (sin(P_ref / a_21)), 0]; % (delta,omega) point
-    equilibrium_points{2} = [pi - 1 / (sin(P_ref / a_21)), 0]; % (delta,omega) point
+    equilibrium_points{1} = [ (asin(P_ref / a_21)), 0]; % (delta,omega) point
+    equilibrium_points{2} = [pi - (asin(P_ref / a_21)), 0]; % (delta,omega) point
 end
