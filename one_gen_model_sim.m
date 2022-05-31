@@ -18,7 +18,7 @@ for ij = 1:length (w_array)
 for ii = 1:length(d_0_array)
 w_0 = w_array(ij)*2*pi;
 d_0 = d_0_array(ii);
-sim_1 = sim("one_gen_model.slx");
+sim_1 = sim("one_gen_model_2020b.slx");
 
 %get data
 w_signal = sim_1.yout.getElement('w');
