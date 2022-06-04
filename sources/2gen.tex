@@ -1,0 +1,413 @@
+%% LyX 2.3.6.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[12pt,english,hebrew]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fontspec}
+\setmainfont[Mapping=tex-text]{Times New Roman}
+\setsansfont[Mapping=tex-text]{Arial}
+\setmonofont{Miriam}
+\usepackage[a4paper]{geometry}
+\geometry{verbose,tmargin=2cm,bmargin=2cm,lmargin=2cm,rmargin=2cm}
+\setlength{\parindent}{0bp}
+\usepackage{color}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\usepackage{theorem}
+\theorembodyfont{\upshape}
+% LuaTeX/luabidi does not know \beginR
+% FIXME LuaTeX/luabidi does not get the order right
+\AtBeginDocument{
+\@ifundefined{setRTL}{}{\providecommand\beginR{\setRTL}}
+}
+\newtheorem{theorem}{{\beginR משפט}}[section]
+% Only needed by babel, not polyglossia (which does
+% not have \make@lr defined)
+\@ifundefined{make@lr}{}{%
+   \AtBeginDocument{\make@lr\thetheorem}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+%%%% GENERAL %%%%
+
+%\date{} %remove comment will disable the auto date on the document
+
+%fix furmula numbering brackets.
+\AtBeginDocument{
+\makeatletter
+\def\tagform@#1{\maketag@@@{(\ignorespaces#1\unskip)}}
+\makeatother 
+}
+
+
+%%%% TIKZ %%%%
+
+%general tikz drawing
+\usepackage{tikz}
+\usepackage{standalone}	%use to add standalone tikz picture tex file
+%for easy coordinates calculation
+\usepackage{calc}
+\usetikzlibrary{calc}
+%for drawing angles easly
+%\usepackage{tkz-euclide} commpile collision with 'tikz-network'
+%\usetkzobj{all} compile issue
+
+%\usepackage{tikz-network} %for graph drawing
+%for electronic circuits via tikz. siunitx is package for units.
+%\usepackage[american,siunitx]{circuitikz}
+
+
+%%%% STYLE %%%%
+
+% manual colors setup
+\definecolor{red}{rgb}{0.9,0,0}
+\definecolor{orange}{rgb}{1,0.6,0}
+\definecolor{yellow}{rgb}{1,0.8,0}
+\definecolor{green}{rgb}{0,0.5,0.3}
+\definecolor{blue}{rgb}{0,0.25,0.65}
+\definecolor{purple}{rgb}{0.6,0,0.6}
+
+\makeatother
+
+\usepackage{listings}
+\lstset{mathescape=true,
+language=Python,
+keywordstyle={\color{purple}\bfseries},
+commentstyle={\color{magenta}\itshape},
+emphstyle={\color{red}},
+breaklines=true,
+stringstyle={\color{green}},
+identifierstyle={\color{blue}\ttfamily},
+tabsize=4}
+\usepackage{polyglossia}
+\setdefaultlanguage{hebrew}
+\setotherlanguage{english}
+\begin{document}
+
+\section{מערכת של שני גנרטורים}
+
+מערכת המצב (לא ליניארית) \LRE{$\delta_{1}=0$}\LRE{
+\[
+\begin{cases}
+\frac{\partial\omega_{1}}{\partial t}=K_{1}\left[3P_{ref_{1}}-3P_{1}-\frac{1}{D_{1}}\left(\omega_{1}-\omega_{s}\right)\right]\\
+\frac{\partial\omega_{2}}{\partial t}=K_{2}\left[3P_{ref_{2}}-3P_{2}-\frac{1}{D_{2}}\left(\omega_{2}-\omega_{s}\right)\right]\\
+\frac{\partial\delta_{2}}{\partial t}=\omega_{2}-\omega_{1}
+\end{cases}
+\]
+}כאשר\LRE{
+\[
+P_{i}\left(t\right)=\sum_{n=1}^{2}a_{i,n}\sin\left(\delta_{i}\left(t\right)-\delta_{n}\left(t\right)\right)+P_{L,i}
+\]
+}\LRE{
+\begin{align*}
+ & P_{1}\left(t\right)=a_{1,2}\sin\left(\delta_{1}\left(t\right)-\delta_{2}\left(t\right)\right)+P_{L,1}=-a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)+P_{L,1}\\
+ & P_{2}\left(t\right)=a_{2,1}\sin\left(\delta_{2}\left(t\right)-\delta_{1}\left(t\right)\right)+P_{L,2}=a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)+P_{L,2}
+\end{align*}
+}נחשב יעקוביאן \LRE{
+\[
+J=\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & -3K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\\
+0 & -\frac{K_{2}}{D_{2}} & 3K_{2}a_{2,1}\sin\left(\delta_{2}\left(t\right)\right)\\
+-1 & 1 & 0
+\end{array}\right]
+\]
+}כמצופה קיבלנו אפס באלכסון. ולכן לא יהיה לנו תחום בנורמות \LRE{$1,2,\infty$}.
+
+\subsection{נסיון ראשון למניפולציה}
+
+נפעיל טרנספורמציית דמיון עם מטריצה \LRE{$T$}\LRE{
+\begin{eqnarray*}
+T=\left[\begin{array}{ccc}
+K_{2} & K_{1} & 0\\
+K_{2} & K_{1} & 0\\
+1 & 0 & 0
+\end{array}\right] & \Rightarrow & T^{-1}=\left[\begin{array}{ccc}
+0 & 0 & 1\\
+\frac{1}{K_{2}} & 0 & -\frac{K_{1}}{K_{2}}\\
+-1 & 1 & 0
+\end{array}\right]
+\end{eqnarray*}
+}\LRE{
+\[
+T^{-1}JT=\left[\begin{array}{ccc}
+0 & 0 & 2\\
+k_{2}\left(\frac{k_{2}}{k_{1}}-\frac{1}{2\,d_{1}}\right)-k_{2}\left(\frac{k_{2}}{k_{1}}+\frac{k_{2}}{2d_{2}k_{1}}\right)-\frac{3a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)}{2}+\frac{3k_{2}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)}{2k_{1}} & k_{1}\left(\frac{k_{2}}{k_{1}}-\frac{1}{2d_{1}}\right)-k_{1}\left(\frac{k_{2}}{k_{1}}+\frac{k_{2}}{2d_{2}k_{1}}\right) & \frac{1}{2d_{1}}-\frac{2k_{2}}{k_{1}}-\frac{k_{2}}{2d_{2}k_{1}}\\
+\frac{3k_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)}{2}+\frac{3k_{2}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)}{2}-\frac{k_{2}^{2}}{2d_{2}}+\frac{k_{1}k_{2}}{2d_{1}} & \frac{k_{1}^{2}}{2d_{1}}-\frac{k_{1}k_{2}}{2d_{2}} & -\frac{k_{1}}{2d_{1}}-\frac{k_{2}}{2d_{2}}
+\end{array}\right]
+\]
+}אפס באלכסון.
+
+\LRE{$T$} בשינוי קל
+
+\LRE{
+\begin{eqnarray*}
+T=\left[\begin{array}{ccc}
+K_{2} & K_{1} & -1\\
+K_{2} & K_{1} & 1\\
+1 & 0 & 0
+\end{array}\right] & \Rightarrow & T^{-1}=\left[\begin{array}{ccc}
+0 & 0 & 1\\
+\frac{1}{2K_{1}} & \frac{1}{2K_{1}} & -\frac{K_{2}}{K_{1}}\\
+-\frac{1}{2} & \frac{1}{2} & 0
+\end{array}\right]
+\end{eqnarray*}
+}\LRE{
+\[
+\]
+}\LRE{
+\[
+T^{-1}JT=\left[\begin{array}{ccc}
+-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right) & -\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right) & \frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}+1\right)-\frac{K_{1}K_{2}}{D_{1}}+1\\
+-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}-1\right) & -\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}-1\right) & \frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}-1\right)-\frac{K_{1}K_{2}}{D_{1}}-1\\
+\frac{3}{2}K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right) & -\frac{3}{2}K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right) & -\frac{K_{1}}{D_{1}}
+\end{array}\right]
+\]
+}
+
+נחפש תחומי יציבות עבור נורמות שונות:
+\begin{enumerate}
+\item \LRE{$L_{1}$}:\LRE{
+\begin{align*}
+\mu_{1}\left(A\right) & =\max_{j}\left\{ A_{jj}+\sum_{i=1,i\ne j}^{n}\left|A_{ij}\right|\right\} \triangleq\max\left\{ X_{1},X_{2},X_{3}\right\} 
+\end{align*}
+}\LRE{
+\begin{align*}
+X_{1} & =-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right)+\left|-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}-1\right)\right|+\left|\frac{3}{2}K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\right|\\
+ & \underset{-\frac{\pi}{2}<\delta<\frac{\pi}{2}}{=}-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right)+\frac{1}{2K_{1}}\left|\frac{K_{1}K_{2}}{D_{1}}-1\right|+\frac{3}{2}K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)
+\end{align*}
+}נבחר\LRE{
+\[
+\frac{K_{1}K_{2}}{D_{1}}=1
+\]
+}נקבל\LRE{
+\[
+\sin\left(\delta_{2}\left(t\right)\right)<\frac{2}{3K_{1}^{2}a_{1,2}}
+\]
+}\LRE{
+\begin{align*}
+X_{2} & =-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}-1\right)+\left|-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right)\right|+\left|-\frac{3}{2}K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\right|\\
+ & \underset{-\frac{\pi}{2}<\delta<\frac{\pi}{2}}{=}-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}-1\right)+\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right)+\frac{3}{2}K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\\
+ & =\frac{1}{K_{1}}+\frac{3}{2}K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)>0
+\end{align*}
+}\LRE{
+\begin{align*}
+X_{3} & =-\frac{K_{1}}{D_{1}}+\left|\frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}+1\right)-\frac{K_{1}K_{2}}{D_{1}}+1\right|+\left|\frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}-1\right)-\frac{K_{1}K_{2}}{D_{1}}-1\right|\\
+ & \leq-\frac{K_{1}}{D_{1}}+\left|\frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}+1\right)\right|+\left|\frac{K_{1}K_{2}}{D_{1}}-1\right|+\left|\frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}-1\right)\right|+\left|\frac{K_{1}K_{2}}{D_{1}}+1\right|\\
+ & \leq-\frac{K_{1}}{D_{1}}+\frac{K_{2}}{K_{1}}\left(\left|1\right|+\left|\frac{K_{1}K_{2}}{D_{2}}\right|\right)+\left(\left|\frac{K_{1}K_{2}}{D_{1}}\right|+\left|1\right|\right)+\frac{K_{2}}{K_{1}}\left(\frac{K_{1}K_{2}}{D_{2}}+1\right)+\left(\frac{K_{1}K_{2}}{D_{1}}+1\right)\\
+ & \leq-\frac{K_{1}}{D_{1}}+\frac{K_{2}}{K_{1}}\left(1+\frac{K_{1}K_{2}}{D_{2}}\right)+\left(\frac{K_{1}K_{2}}{D_{1}}+1\right)+\frac{K_{2}}{K_{1}}\left(\frac{K_{1}K_{2}}{D_{2}}+1\right)+\left(\frac{K_{1}K_{2}}{D_{1}}+1\right)\\
+ & \leq-\frac{K_{1}}{D_{1}}+\frac{2K_{2}}{K_{1}}+\frac{2K_{2}^{2}}{D_{2}}+\frac{2K_{1}K_{2}}{D_{1}}+2
+\end{align*}
+}\LRE{
+\[
+\frac{2K_{2}}{K_{1}}+\frac{2K_{2}^{2}}{D_{2}}+\frac{2K_{1}K_{2}}{D_{1}}+2<\frac{K_{1}}{D_{1}}
+\]
+}
+\item \LRE{$L_{\infty}$}:\LRE{
+\begin{align*}
+\mu_{\infty}\left(J\right) & =\max_{i}\left\{ A_{ii}+\sum_{j=1,j\ne i}^{n}\left|A_{ij}\right|\right\} \triangleq\max\left\{ X_{1},X_{2},X_{3}\right\} 
+\end{align*}
+}\LRE{
+\[
+X_{1}=-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right)+\left|-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right)\right|+\left|\frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}+1\right)-\frac{K_{1}K_{2}}{D_{1}}+1\right|>0
+\]
+}\LRE{
+\[
+X_{2}=-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}-1\right)+\left|-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}-1\right)\right|+\left|\frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}-1\right)-\frac{K_{1}K_{2}}{D_{1}}-1\right|>0
+\]
+}\LRE{
+\[
+X_{3}=-\frac{K_{1}}{D_{1}}
+\]
+}
+\item \LRE{$L_{2}$}:\LRE{
+\[
+\mu_{2}\left(A\right)=\lambda_{max}\left(\frac{A+A^{T}}{2}\right)
+\]
+}\LRE{
+\[
+T^{-1}JT=\left[\begin{array}{ccc}
+-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right) & -\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}+1\right) & \frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}+1\right)-\frac{K_{1}K_{2}}{D_{1}}+1\\
+-\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}-1\right) & -\frac{1}{2K_{1}}\left(\frac{K_{1}K_{2}}{D_{1}}-1\right) & \frac{K_{2}}{K_{1}}\left(-\frac{K_{1}K_{2}}{D_{2}}-1\right)-\frac{K_{1}K_{2}}{D_{1}}-1\\
+\frac{3}{2}K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right) & -\frac{3}{2}K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right) & -\frac{K_{1}}{D_{1}}
+\end{array}\right]
+\]
+}
+\end{enumerate}
+
+\subsection{ניסיון הצלה של נסיון קודם בעזרת לכסון}
+
+נגדיר מטריצה \LRE{$P=IT$} שהיא הפיכה כיוון שהיא מכפלה של מטריצות
+הפיכות. מתקיים \LRE{
+\[
+P^{-1}=\left(IT\right)^{-1}=T^{-1}I^{-1}
+\]
+} לכן \LRE{
+\[
+P^{-1}JP=
+\]
+}
+
+\subsection{ניסיון עם מטריצה אלכסונית כללית}
+
+\LRE{
+\[
+J=\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & -3K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\\
+0 & -\frac{K_{2}}{D_{2}} & 3K_{2}a_{2,1}\sin\left(\delta_{2}\left(t\right)\right)\\
+-1 & 1 & 0
+\end{array}\right]
+\]
+}\LRE{
+\begin{eqnarray*}
+T=\left[\begin{array}{ccc}
+\alpha_{1} & 0 & 0\\
+0 & \alpha_{2} & 0\\
+0 & 0 & \alpha_{3}
+\end{array}\right] & \Rightarrow & T^{-1}=\left[\begin{array}{ccc}
+\frac{1}{\alpha_{1}} & 0 & 0\\
+0 & \frac{1}{\alpha_{2}} & 0\\
+0 & 0 & \frac{1}{\alpha_{3}}
+\end{array}\right]
+\end{eqnarray*}
+}\LRE{
+\begin{align*}
+TJT^{-1} & =\left[\begin{array}{ccc}
+\alpha_{1} & 0 & 0\\
+0 & \alpha_{2} & 0\\
+0 & 0 & \alpha_{3}
+\end{array}\right]\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & -3K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\\
+0 & -\frac{K_{2}}{D_{2}} & 3K_{2}a_{2,1}\sin\left(\delta_{2}\left(t\right)\right)\\
+-1 & 1 & 0
+\end{array}\right]\left[\begin{array}{ccc}
+\frac{1}{\alpha_{1}} & 0 & 0\\
+0 & \frac{1}{\alpha_{2}} & 0\\
+0 & 0 & \frac{1}{\alpha_{3}}
+\end{array}\right]\\
+ & =\left[\begin{array}{ccc}
+\alpha_{1} & 0 & 0\\
+0 & \alpha_{2} & 0\\
+0 & 0 & \alpha_{3}
+\end{array}\right]\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & -3K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\\
+0 & -\frac{K_{2}}{D_{2}} & 3K_{2}a_{2,1}\sin\left(\delta_{2}\left(t\right)\right)\\
+-1 & 1 & 0
+\end{array}\right]\left[\begin{array}{ccc}
+\frac{1}{\alpha_{1}} & 0 & 0\\
+0 & \frac{1}{\alpha_{2}} & 0\\
+0 & 0 & \frac{1}{\alpha_{3}}
+\end{array}\right]
+\end{align*}
+}
+
+\subsection{נסיון לכסון המטריצה \LRE{$J$}}
+
+\LRE{
+\[
+J=\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & -3K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\\
+0 & -\frac{K_{2}}{D_{2}} & 3K_{2}a_{2,1}\sin\left(\delta_{2}\left(t\right)\right)\\
+-1 & 1 & 0
+\end{array}\right]=\left[\begin{array}{ccc}
+a & b & -c\\
+0 & b & c\\
+-1 & 1 & 0
+\end{array}\right]
+\]
+}
+
+נפתור פולינום אופייני
+
+\subsection{נסיון עם מערכת סימטרית ובעזרת ליאפונוב}
+
+נניח מערכת סימטרית\LRE{
+\[
+J_{s}=\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & -3K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\\
+0 & -\frac{K_{1}}{D_{1}} & 3K_{1}a_{2,1}\sin\left(\delta_{2}\left(t\right)\right)\\
+-1 & 1 & 0
+\end{array}\right]
+\]
+}נחפש מטריצת דימיון עם כלל ליאפונוב עם \LRE{$Q=I$} ו-\LRE{$P$} סימטרית\LRE{
+\[
+P=\left(\begin{array}{ccc}
+a & b & c\\
+b & d & e\\
+c & e & f
+\end{array}\right)
+\]
+}\LRE{
+\[
+J_{s}^{T}P+PJ_{s}=-Q=-I
+\]
+}פתרון המשוואה במטלב נותן\LRE{
+\begin{align*}
+\left(\begin{array}{cccccc}
+a & b & c & d & e & f\end{array}\right) & =\left(\begin{array}{cccccc}
+-\frac{d_{1}\left(1-6k_{1}\mathrm{\sin\left(\delta_{2}\left(t\right)\right)}\right)}{12k_{1}^{2}\mathrm{asd}} & \frac{d_{1}}{12k_{1}^{2}\sin\left(\delta_{2}\left(t\right)\right)} & \frac{1}{12k_{1}\sin\left(\delta_{2}\left(t\right)\right)} & \frac{d_{1}\left(6k_{1}\sin\left(\delta_{2}\left(t\right)\right)-1\right)}{12k_{1}^{2}\sin\left(\delta_{2}\left(t\right)\right)} & -\frac{1}{12k_{1}\sin\left(\delta_{2}\left(t\right)\right)} & -\frac{18k_{1}d_{1}^{2}\sin^{2}\left(\delta_{2}\left(t\right)\right)-6d_{1}^{2}\sin\left(\delta_{2}\left(t\right)\right)+k_{1}}{12d_{1}k_{1}\sin\left(\delta_{2}\left(t\right)\right)}\end{array}\right)\\
+ & =\frac{1}{12k_{1}\sin\left(\delta_{2}\left(t\right)\right)}\left(\begin{array}{cccccc}
+-\frac{d_{1}\left(1-6k_{1}\mathrm{\sin\left(\delta_{2}\left(t\right)\right)}\right)}{k_{1}} & \frac{d_{1}}{k_{1}} & 1 & \frac{d_{1}\left(6k_{1}\sin\left(\delta_{2}\left(t\right)\right)-1\right)}{k_{1}} & -1 & -\frac{18k_{1}d_{1}^{2}\sin^{2}\left(\delta_{2}\left(t\right)\right)-6d_{1}^{2}\sin\left(\delta_{2}\left(t\right)\right)+k_{1}}{d_{1}}\end{array}\right)\\
+ & =\frac{1}{12k_{1}\sin\left(\delta_{2}\left(t\right)\right)}\left(\begin{array}{cccccc}
+-\frac{d_{1}}{k_{1}}+6d_{1}\mathrm{\sin\left(\delta_{2}\left(t\right)\right)} & \frac{d_{1}}{k_{1}} & 1 & \left(6d_{1}\sin\left(\delta_{2}\left(t\right)\right)-\frac{d_{1}}{k_{1}}\right) & -1 & -18k_{1}d_{1}\sin^{2}\left(\delta_{2}\left(t\right)\right)+6d_{1}\sin\left(\delta_{2}\left(t\right)\right)-\frac{k_{1}}{d1}\end{array}\right)\\
+ & =\frac{1}{12k_{1}\sin\left(\delta_{2}\left(t\right)\right)}\frac{d_{1}}{k_{1}}\left(\begin{array}{cccccc}
+-1+6k_{1}\mathrm{\sin\left(\delta_{2}\left(t\right)\right)} & 1 & \frac{k_{1}}{d_{1}} & 6k_{1}\sin\left(\delta_{2}\left(t\right)\right)-1 & -\frac{k_{1}}{d_{1}} & -18k_{1}^{2}\sin^{2}\left(\delta_{2}\left(t\right)\right)+6k_{1}\sin\left(\delta_{2}\left(t\right)\right)-\frac{k_{1}^{2}}{d_{1}^{2}}\end{array}\right)
+\end{align*}
+}לכן\LRE{
+\[
+P=\frac{1}{12k_{1}\sin\left(\delta_{2}\left(t\right)\right)}\frac{d_{1}}{k_{1}}\left(\begin{array}{ccc}
+-1+6k_{1}\mathrm{\sin\left(\delta_{2}\left(t\right)\right)} & 1 & \frac{k_{1}}{d_{1}}\\
+1 & 6k_{1}\sin\left(\delta_{2}\left(t\right)\right)-1 & -\frac{k_{1}}{d_{1}}\\
+\frac{k_{1}}{d_{1}} & -\frac{k_{1}}{d_{1}} & -18k_{1}^{2}\sin^{2}\left(\delta_{2}\left(t\right)\right)+6k_{1}\sin\left(\delta_{2}\left(t\right)\right)-\frac{k_{1}^{2}}{d_{1}^{2}}
+\end{array}\right)
+\]
+}\LRE{
+\[
+\]
+}נחשב את \LRE{$PJ_{s}P$}\LRE{
+\[
+PJT^{-1}=\left[\begin{array}{ccc}
+\\
+\\
+\\
+\end{array}\right]\left[\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & -3K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\\
+0 & -\frac{K_{1}}{D_{1}} & 3K_{1}a_{2,1}\sin\left(\delta_{2}\left(t\right)\right)\\
+-1 & 1 & 0
+\end{array}\right]\right]\left[\right]
+\]
+}
+
+\subsection{ז'ורדן}
+
+בעזזרת צמטלב נחשב את צורת ז'ורדן של המערכת הסימטרית \LRE{
+\[
+J_{s}=\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & -3K_{1}a_{1,2}\sin\left(\delta_{2}\left(t\right)\right)\\
+0 & -\frac{K_{1}}{D_{1}} & 3K_{1}a_{2,1}\sin\left(\delta_{2}\left(t\right)\right)\\
+-1 & 1 & 0
+\end{array}\right]
+\]
+}
+
+\LRE{
+\[
+J_{j}=\left(\begin{array}{ccc}
+-\frac{k+\sqrt{k\,\left(24\,\mathrm{asd}\,d^{2}+k\right)}}{2\,d} & 0 & 0\\
+0 & -\frac{k}{d} & 0\\
+0 & 0 & -\frac{k-\sqrt{k\,\left(24\,\mathrm{asd}\,d^{2}+k\right)}}{2\,d}
+\end{array}\right)
+\]
+}האיבר היחיד שאינו תמיד שלילי הוא\LRE{
+\[
+-\frac{k-\sqrt{k\,\left(24\,\mathrm{asd}\,d^{2}+k\right)}}{2\,d}
+\]
+}נדרוש \LRE{
+\begin{gather*}
+-\frac{k-\sqrt{k\,\left(24\,\mathrm{asd}\,d^{2}+k\right)}}{2\,d}<0\\
+\sqrt{k\,\left(24\,\mathrm{asd}\,d^{2}+k\right)}<k\\
+k\,\left(24\,\mathrm{asd}\,d^{2}+k\right)<k^{2}\\
+24\,\mathrm{asd}\,d^{2}<0
+\end{gather*}
+}כלומר חייבים לדרוש \LRE{$asd$} שלילי
+\end{document}

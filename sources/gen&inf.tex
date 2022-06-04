@@ -1,0 +1,341 @@
+%% LyX 2.3.6.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[12pt,english,hebrew]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fontspec}
+\setmainfont[Mapping=tex-text]{Times New Roman}
+\setsansfont[Mapping=tex-text]{Arial}
+\setmonofont{Miriam}
+\usepackage[a4paper]{geometry}
+\geometry{verbose,tmargin=2cm,bmargin=2cm,lmargin=2cm,rmargin=2cm}
+\setlength{\parindent}{0bp}
+\usepackage{color}
+\usepackage[all]{xy}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\providecommand\textquotedblplain{%
+  \bgroup\addfontfeatures{Mapping=}\char34\egroup}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\usepackage{theorem}
+\theorembodyfont{\upshape}
+% LuaTeX/luabidi does not know \beginR
+% FIXME LuaTeX/luabidi does not get the order right
+\AtBeginDocument{
+\@ifundefined{setRTL}{}{\providecommand\beginR{\setRTL}}
+}
+\newtheorem{theorem}{{\beginR משפט}}[section]
+% Only needed by babel, not polyglossia (which does
+% not have \make@lr defined)
+\@ifundefined{make@lr}{}{%
+   \AtBeginDocument{\make@lr\thetheorem}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+%%%% GENERAL %%%%
+
+%\date{} %remove comment will disable the auto date on the document
+
+%fix furmula numbering brackets.
+\AtBeginDocument{
+\makeatletter
+\def\tagform@#1{\maketag@@@{(\ignorespaces#1\unskip)}}
+\makeatother 
+}
+
+
+%%%% TIKZ %%%%
+
+%general tikz drawing
+\usepackage{tikz}
+\usepackage{standalone}	%use to add standalone tikz picture tex file
+%for easy coordinates calculation
+\usepackage{calc}
+\usetikzlibrary{calc}
+%for drawing angles easly
+%\usepackage{tkz-euclide} commpile collision with 'tikz-network'
+%\usetkzobj{all} compile issue
+
+%\usepackage{tikz-network} %for graph drawing
+%for electronic circuits via tikz. siunitx is package for units.
+%\usepackage[american,siunitx]{circuitikz}
+
+
+%%%% STYLE %%%%
+
+% manual colors setup
+\definecolor{red}{rgb}{0.9,0,0}
+\definecolor{orange}{rgb}{1,0.6,0}
+\definecolor{yellow}{rgb}{1,0.8,0}
+\definecolor{green}{rgb}{0,0.5,0.3}
+\definecolor{blue}{rgb}{0,0.25,0.65}
+\definecolor{purple}{rgb}{0.6,0,0.6}
+
+\makeatother
+
+\usepackage{listings}
+\lstset{mathescape=true,
+language=Python,
+keywordstyle={\color{purple}\bfseries},
+commentstyle={\color{magenta}\itshape},
+emphstyle={\color{red}},
+breaklines=true,
+stringstyle={\color{green}},
+identifierstyle={\color{blue}\ttfamily},
+tabsize=4}
+\usepackage{polyglossia}
+\setdefaultlanguage{hebrew}
+\setotherlanguage{english}
+\begin{document}
+
+\section{גנרטור ורשת קשיחה}
+
+\LRE{
+\[
+J=\left[\begin{array}{cc}
+0 & 1\\
+\frac{-3K\left|E\right|V_{g}}{X_{s}}\cos\left(\delta\right) & -\frac{K}{D}
+\end{array}\right]
+\]
+}\LRE{
+\[
+J=\left[\begin{array}{cc}
+3KK_{2}\cos\left(\omega-v\right) & -3KK_{2}\cos\left(\omega-v\right)-1-\frac{K}{D}\\
+3KK_{2}\cos\left(\omega-v\right) & -3KK_{2}\cos\left(\omega-v\right)-\frac{K}{D}
+\end{array}\right]
+\]
+}\LRE{
+\begin{eqnarray*}
+J=\left[\begin{array}{cc}
+0 & 1\\
+\frac{-3K\left|E\right|V_{g}}{X_{s}}\cos\left(\delta\right) & -\frac{K}{D}
+\end{array}\right] & \overset{\text{liniar manipulation}}{\longrightarrow} & J=\left[\begin{array}{cc}
+3KK_{2}\cos\left(\omega-v\right) & -3KK_{2}\cos\left(\omega-v\right)-1-\frac{K}{D}\\
+3KK_{2}\cos\left(\omega-v\right) & -3KK_{2}\cos\left(\omega-v\right)-\frac{K}{D}
+\end{array}\right]
+\end{eqnarray*}
+}
+
+\subsection{ניסיון ראשון}
+
+מערכת המצב (לא ליניארית)\LRE{
+\[
+\begin{cases}
+\frac{\partial\delta}{\partial t}=\Delta\omega\\
+\frac{\partial\Delta\omega}{\partial t}=3K\left[P_{ref}-\frac{V_{g}\left|E\right|\sin\left(\delta\right)}{X_{s}}-\frac{\Delta\omega}{3D}\right]
+\end{cases}
+\]
+}נחשב את היעקוביאן\LRE{
+\[
+J=\left[\begin{array}{cc}
+0 & 1\\
+\frac{-3K\left|E\right|V_{g}}{X_{s}}\cos\left(\delta\right) & -\frac{K}{D}
+\end{array}\right]
+\]
+}נק' שיווי המשקל הן \LRE{$u_{1}=\left(\bar{\delta}_{1},0\right)$},
+\LRE{$u_{2}=\left(\bar{\delta}_{2},0\right)$} כאשר\LRE{
+\begin{eqnarray*}
+\bar{\delta}_{1}=\sin^{-1}\left(\frac{X_{s}P_{ref}}{V_{g}\left|E\right|}\right) & , & \bar{\delta}_{2}=\pi-\sin^{-1}\left(\frac{X_{s}P_{ref}}{V_{g}\left|E\right|}\right)
+\end{eqnarray*}
+}נחפש את תחום היציבות עבור נורמות שונות:
+\begin{enumerate}
+\item \LRE{$L_{1}$}:\LRE{
+\[
+\mu_{1}\left(A\right)=\max_{j}\left\{ A_{jj}+\sum_{i=1,i\ne j}^{n}\left|A_{ij}\right|\right\} =\max\left\{ \frac{3K\left|E\right|V_{g}}{X_{s}}\left|\cos\left(\delta\right)\right|,1-\frac{K}{D}\Delta\omega\right\} \geq0
+\]
+}לכן לא קיים תחום יציבות עבור נורמה זו.
+\item \LRE{$L_{\infty}$}: \LRE{
+\[
+\mu_{\infty}\left(J\right)=\max_{i}\left\{ A_{ii}+\sum_{j=1,j\ne i}^{n}\left|A_{ij}\right|\right\} =\max\left\{ 1,\frac{3K\left|E\right|V_{g}}{X_{s}}\left|\cos\left(\delta\right)\right|-\frac{K}{D}\right\} \geq0
+\]
+}לכן לא קיים תחום יציבות עבור נורמה זו.
+\item \LRE{$L_{2}$}: \LRE{
+\[
+\mu_{2}\left(J\right)=\lambda_{max}\left(\frac{J+J^{T}}{2}\right)=\lambda_{max}\left(\left[\begin{array}{cc}
+0 & \frac{1}{2}-\frac{3K\left|E\right|V_{g}}{2X_{s}}\cos\left(\delta\right)\\
+\frac{1}{2}-\frac{3K\left|E\right|V_{g}}{2X_{s}}\cos\left(\delta\right) & -\frac{K}{D}
+\end{array}\right]\right)\triangleq\lambda_{max}\left(\left[\begin{array}{cc}
+0 & \frac{1}{2}-\frac{3KK_{2}}{2}\\
+\frac{1}{2}-\frac{3KK_{2}}{2} & -\frac{K}{D}
+\end{array}\right]\right)
+\]
+}נחשב ע\textquotedblplain ע \LRE{
+\[
+\left|\begin{array}{cc}
+\lambda & -\frac{1}{2}+\frac{3KK_{2}}{2}\\
+-\frac{1}{2}+\frac{3KK_{2}}{2} & \lambda+\frac{K}{D}
+\end{array}\right|=\lambda^{2}+\frac{K}{D}\lambda-\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2}=0
+\]
+}נשתמש במבחן \LRE{$RH$} כדי למצוא תנאי על \LRE{$K_{2}\left(\delta\right)$}
+עבורו זה ייתקיים\LRE{
+\[
+\xymatrix{\lambda_{2} & 1 & -\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2}\\
+\lambda_{1} & \frac{K}{D} & 0\\
+\lambda_{0} & -\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2} & 0
+}
+\]
+}ע\textquotedblplain מ שכל הע\textquotedblplain ע עצמיים יהיו שליליים
+דרוש \LRE{$-\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2}>0$} כלומר
+לא קיים מצב כזה ולכן \LRE{$\mu_{2}$} תמיד חיובי ולא קיים תחום יציבות
+עבור נורמה זו. 
+\end{enumerate}
+
+\subsection{ניסיון שני}
+
+הניסיון הראשון לא עבד כיוון שאחד שנגזרת משתנה המצב \LRE{$\delta$}
+אינו תלוי בעצמו ולכן קיבלנו אפס באלכסון של המטריצה \LRE{$J$}. ננסה
+לעשות מניפולציה על משתני המצב כדי לקבל תלות במשתנה המצב וכך שכל איברי
+האלכסון יהיו שונים מאפס.
+
+מערכת המצב (לא ליניארית)\LRE{
+\[
+\begin{cases}
+\frac{\partial\delta}{\partial t}=\omega\\
+\frac{\partial\omega}{\partial t}=3K\left[P_{ref}-\frac{V_{g}\left|E\right|\sin\left(\delta\right)}{X_{s}}-\frac{\omega}{3D}\right]
+\end{cases}
+\]
+}נסמן \LRE{$v=\omega-\delta$} \LRE{$\Leftarrow$} \LRE{$\frac{\partial v}{\partial t}=\frac{\partial\omega}{\partial t}-\frac{\partial\delta}{\partial t}$}
+נציב ונקבל\LRE{
+\[
+\begin{cases}
+\frac{\partial v}{\partial t}=3K\left[P_{ref}-\frac{V_{g}\left|E\right|\sin\left(\omega-v\right)}{X_{s}}-\frac{\omega}{3D}\right]-\omega\\
+\frac{\partial\omega}{\partial t}=3K\left[P_{ref}-\frac{V_{g}\left|E\right|\sin\left(\omega-v\right)}{X_{s}}-\frac{\omega}{3D}\right]
+\end{cases}
+\]
+}נחשב את היעקוביאן, נסמן \LRE{$K_{2}=\frac{\left|E\right|V_{g}}{X_{s}}$}\LRE{
+\[
+J=\left[\begin{array}{cc}
+3KK_{2}\cos\left(\omega-v\right) & -3KK_{2}\cos\left(\omega-v\right)-1-\frac{K}{D}\\
+3KK_{2}\cos\left(\omega-v\right) & -3KK_{2}\cos\left(\omega-v\right)-\frac{K}{D}
+\end{array}\right]
+\]
+}נק' שיווי המשקל הן \LRE{$u_{1}=\left(\bar{\delta}_{1},0\right)$},
+\LRE{$u_{2}=\left(\bar{\delta}_{2},0\right)$} כאשר\LRE{
+\begin{eqnarray*}
+\bar{v}_{1}=-\bar{\delta}_{1}=-\sin^{-1}\left(\frac{X_{s}P_{ref}}{V_{g}\left|E\right|}\right) & , & \bar{v}_{2}=-\bar{\delta}_{2}=-\pi+\sin^{-1}\left(\frac{X_{s}P_{ref}}{V_{g}\left|E\right|}\right)
+\end{eqnarray*}
+}נחפש את תחום היציבות עבור נורמות שונות:
+\begin{enumerate}
+\item \LRE{$L_{1}$}:\LRE{
+\[
+\mu_{1}\left(A\right)=\max_{j}\left\{ A_{jj}+\sum_{i=1,i\ne j}^{n}\left|A_{ij}\right|\right\} =\max\left\{ \right\} \geq0
+\]
+}לכן לא קיים תחום יציבות עבור נורמה זו.
+\item \LRE{$L_{\infty}$}: \LRE{
+\begin{align*}
+\mu_{\infty}\left(J\right) & =\max_{i}\left\{ A_{ii}+\sum_{j=1,j\ne i}^{n}\left|A_{ij}\right|\right\} \\
+ & =\max\left\{ 3KK_{2}\cos\left(\omega-v\right)+\left|-3KK_{2}\cos\left(\omega-v\right)-1-\frac{K}{D}\right|,3KK_{2}\cos\left(\omega-v\right)+\left|-3KK_{2}\cos\left(\omega-v\right)-\frac{K}{D}\right|\right\} \geq0
+\end{align*}
+}כלומר כדי \LRE{$\mu_{\infty}<0$} אם \LRE{$\cos\left(\delta\right)<-\frac{1}{3K_{2}D}$}
+כלומר נדרוש \LRE{$0<\frac{1}{3K_{2}D}<1$}. אם נניח \LRE{$\frac{1}{3K_{2}D}\rightarrow0$}
+אז נקבל את התחום המקסימלי \LRE{$<\frac{3\pi}{2}$}\LRE{$\frac{\pi}{2}<\delta$}.
+\item \LRE{$L_{2}$}: \LRE{
+\[
+\begin{array}{cc}
+3KK_{2}\cos\left(\omega-v\right) & -3KK_{2}\cos\left(\omega-v\right)-1-\frac{K}{D}\\
+3KK_{2}\cos\left(\omega-v\right) & -3KK_{2}\cos\left(\omega-v\right)-\frac{K}{D}
+\end{array}
+\]
+}\LRE{
+\[
+\mu_{2}\left(J\right)=\lambda_{max}\left(\frac{J+J^{T}}{2}\right)=\lambda_{max}\left(\left[\begin{array}{cc}
+3KK_{2}\cos\left(\omega-v\right) & -\frac{1}{2}-\frac{K}{2D}\\
+-\frac{1}{2}-\frac{K}{2D} & -3KK_{2}\cos\left(\omega-v\right)-\frac{K}{D}
+\end{array}\right]\right)\triangleq\lambda_{max}\left(\left[\begin{array}{cc}
+3KK_{3} & -\frac{1}{2}-\frac{K}{2D}\\
+-\frac{1}{2}-\frac{K}{2D} & -3KK_{3}-\frac{K}{D}
+\end{array}\right]\right)
+\]
+}נחשב ע\textquotedblplain ע \LRE{
+\begin{align*}
+\left|\begin{array}{cc}
+\lambda-3KK_{3} & \frac{1}{2}+\frac{K}{2D}\\
+\frac{1}{2}+\frac{K}{2D} & \lambda+3KK_{3}+\frac{K}{D}
+\end{array}\right| & =\left(\lambda-3KK_{3}\right)\left(\lambda+3KK_{3}+\frac{K}{D}\right)-\left(\frac{1}{2}+\frac{K}{2D}\right)^{2}\\
+ & =\lambda^{2}+\frac{K}{D}\lambda-3KK_{3}\left(3KK_{3}+\frac{K}{D}\right)-\left(\frac{1}{2}+\frac{K}{2D}\right)^{2}=0
+\end{align*}
+}נשתמש במבחן \LRE{$RH$} כדי למצוא תנאי על \LRE{$K_{2}\left(\delta\right)$}
+עבורו זה ייתקיים\LRE{
+\[
+\xymatrix{\lambda_{2} & 1 & -\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2}\\
+\lambda_{1} & \frac{K}{D} & 0\\
+\lambda_{0} & -\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2} & 0
+}
+\]
+}ע\textquotedblplain מ שכל הע\textquotedblplain ע עצמיים יהיו שליליים
+דרוש \LRE{$-\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2}>0$} כלומר
+לא קיים מצב כזה ולכן \LRE{$\mu_{2}$} תמיד חיובי ולא קיים תחום יציבות
+עבור נורמה זו. 
+\end{enumerate}
+
+\section{שני גנרטורים}
+
+מערכת המצב (לא ליניארית)\LRE{
+\[
+\begin{cases}
+\frac{\partial\omega_{1}}{\partial t}=K_{1}\left[\frac{\omega_{s}}{D_{1}}+3P_{ref_{1}}-3P_{1}-\frac{\omega_{1}}{D_{1}}\right]\\
+\frac{\partial\omega_{2}}{\partial t}=K_{2}\left[\frac{\omega_{s}}{D_{2}}+3P_{ref_{2}}-3P_{2}-\frac{\omega_{2}}{D_{2}}\right]\\
+\frac{\partial\delta_{2}}{\partial t}=\omega_{2}-\omega_{1}
+\end{cases}
+\]
+}כאשר\LRE{
+\begin{align*}
+ & P_{1}=-\frac{\delta_{2}}{X_{1}+X_{2}}+\frac{X_{2}}{X_{1}+X_{2}}P_{L}\\
+ & P_{2}=+\frac{\delta_{2}}{X_{1}+X_{2}}+\frac{X_{1}}{X_{1}+X_{2}}P_{L}
+\end{align*}
+}נחשב את היעקוביאן\LRE{
+\[
+J=\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & \frac{3K_{1}}{X_{1}+X_{2}}\\
+0 & -\frac{K_{2}}{D_{2}} & -\frac{3K_{2}}{X_{1}+X_{2}}\\
+-1 & 1 & 0
+\end{array}\right]
+\]
+}נחפש את תחום היציבות עבור נורמות שונות:
+\begin{enumerate}
+\item \LRE{$L_{1}$}:\LRE{
+\[
+\mu_{1}\left(A\right)=\max_{j}\left\{ A_{jj}+\sum_{i=1,i\ne j}^{n}\left|A_{ij}\right|\right\} =\max\left\{ 1-\frac{K_{1}}{D_{1}},1-\frac{K_{2}}{D_{2}},\left|\frac{3K_{1}}{X_{1}+X_{2}}\right|+\left|\frac{3K_{2}}{X_{1}+X_{2}}\right|\right\} \geq0
+\]
+}לכן לא קיים תחום יציבות עבור נורמה זו.
+\item \LRE{$L_{\infty}$}: \LRE{
+\[
+\mu_{\infty}\left(J\right)=\max_{i}\left\{ A_{ii}+\sum_{j=1,j\ne i}^{n}\left|A_{ij}\right|\right\} =\max\left\{ \left|\frac{3K_{1}}{X_{1}+X_{2}}\right|-\frac{K_{1}}{D_{1}},\left|\frac{3K_{2}}{X_{1}+X_{2}}\right|-\frac{K_{2}}{D_{2}},2\right\} \geq0
+\]
+}לכן לא קיים תחום יציבות עבור נורמה זו.
+\item \LRE{$L_{2}$}: \LRE{
+\[
+\mu_{2}\left(J\right)=\lambda_{max}\left(\frac{J+J^{T}}{2}\right)=\lambda_{max}\left(\left[\begin{array}{ccc}
+-\frac{K_{1}}{D_{1}} & 0 & \frac{3}{2}\frac{K_{1}}{X_{1}+X_{2}}-\frac{1}{2}\\
+0 & -\frac{K_{2}}{D_{2}} & \frac{1}{2}-\frac{3}{2}\frac{K_{2}}{X_{1}+X_{2}}\\
+\frac{3}{2}\frac{K_{1}}{X_{1}+X_{2}}-\frac{1}{2} & \frac{1}{2}-\frac{3}{2}\frac{K_{2}}{X_{1}+X_{2}} & 0
+\end{array}\right]\right)
+\]
+}נחשב ע\textquotedblplain ע \LRE{
+\begin{align*}
+ & \left|\begin{array}{ccc}
+\lambda+\frac{K_{1}}{D_{1}} & 0 & \frac{1}{2}-\frac{3}{2}\frac{K_{1}}{X_{1}+X_{2}}\\
+0 & \lambda+\frac{K_{2}}{D_{2}} & \frac{3}{2}\frac{K_{2}}{X_{1}+X_{2}}-\frac{1}{2}\\
+\frac{3}{2}\frac{K_{1}}{X_{1}+X_{2}}-\frac{1}{2} & \frac{3}{2}\frac{K_{2}}{X_{1}+X_{2}}-\frac{1}{2} & \lambda
+\end{array}\right|=\\
+ & =\left(\lambda+\frac{K_{1}}{D_{1}}\right)\left(\lambda\left(\lambda+\frac{K_{2}}{D_{2}}\right)-\left(\frac{3}{2}\frac{K_{2}}{X_{1}+X_{2}}-\frac{1}{2}\right)^{2}\right)+\left(\frac{1}{2}-\frac{3}{2}\frac{K_{1}}{X_{1}+X_{2}}\right)\left(\right)
+\end{align*}
+}נשתמש במבחן \LRE{$RH$} כדי למצוא תנאי על \LRE{$K_{2}\left(\delta\right)$}
+עבורו זה ייתקיים\LRE{
+\[
+\xymatrix{\lambda_{3} & -\frac{K_{1}}{D_{1}} & -\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2}\\
+\lambda_{2}\\
+\lambda_{1} & \frac{K}{D} & 0\\
+\lambda_{0} & -\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2} & 0
+}
+\]
+}ע\textquotedblplain מ שכל הע\textquotedblplain ע עצמיים יהיו שליליים
+דרוש \LRE{$-\left(-\frac{1}{2}+\frac{3KK_{2}}{2}\right)^{2}>0$} כלומר
+לא קיים מצב כזה ולכן \LRE{$\mu_{2}$} תמיד חיובי ולא קיים תחום יציבות
+עבור נורמה זו. 
+\end{enumerate}
+
+\end{document}
