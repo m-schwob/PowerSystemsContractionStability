@@ -1,0 +1,572 @@
+%% LyX 2.3.6.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[12pt,english,hebrew]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fontspec}
+\setmainfont[Mapping=tex-text]{Times New Roman}
+\setsansfont[Mapping=tex-text]{Arial}
+\setmonofont{Miriam}
+\usepackage[a4paper]{geometry}
+\geometry{verbose,tmargin=2cm,bmargin=2cm,lmargin=2cm,rmargin=2cm}
+\setlength{\parindent}{0bp}
+\usepackage{color}
+\usepackage{mathtools}
+\usepackage{url}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\providecommand\textquotedblplain{%
+  \bgroup\addfontfeatures{Mapping=}\char34\egroup}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\usepackage{theorem}
+\theorembodyfont{\upshape}
+% LuaTeX/luabidi does not know \beginR
+% FIXME LuaTeX/luabidi does not get the order right
+\AtBeginDocument{
+\@ifundefined{setRTL}{}{\providecommand\beginR{\setRTL}}
+}
+\newtheorem{theorem}{{\beginR משפט}}[section]
+% Only needed by babel, not polyglossia (which does
+% not have \make@lr defined)
+\@ifundefined{make@lr}{}{%
+   \AtBeginDocument{\make@lr\thetheorem}
+}
+\newtheorem{definition}[theorem]{{\beginR הגדרה}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+%%%% GENERAL %%%%
+
+%\date{} %remove comment will disable the auto date on the document
+
+%fix furmula numbering brackets.
+\AtBeginDocument{
+\makeatletter
+\def\tagform@#1{\maketag@@@{(\ignorespaces#1\unskip)}}
+\makeatother 
+}
+
+
+%%%% TIKZ %%%%
+
+%general tikz drawing
+\usepackage{tikz}
+\usepackage{standalone}	%use to add standalone tikz picture tex file
+%for easy coordinates calculation
+\usepackage{calc}
+\usetikzlibrary{calc}
+%for drawing angles easly
+%\usepackage{tkz-euclide} commpile collision with 'tikz-network'
+%\usetkzobj{all} compile issue
+
+%\usepackage{tikz-network} %for graph drawing
+%for electronic circuits via tikz. siunitx is package for units.
+%\usepackage[american,siunitx]{circuitikz}
+
+
+%%%% STYLE %%%%
+
+% manual colors setup
+\definecolor{red}{rgb}{0.9,0,0}
+\definecolor{orange}{rgb}{1,0.6,0}
+\definecolor{yellow}{rgb}{1,0.8,0}
+\definecolor{green}{rgb}{0,0.5,0.3}
+\definecolor{blue}{rgb}{0,0.25,0.65}
+\definecolor{purple}{rgb}{0.6,0,0.6}
+
+\makeatother
+
+\usepackage{listings}
+\lstset{mathescape=true,
+language=Python,
+keywordstyle={\color{purple}\bfseries},
+commentstyle={\color{magenta}\itshape},
+emphstyle={\color{red}},
+breaklines=true,
+stringstyle={\color{green}},
+identifierstyle={\color{blue}\ttfamily},
+tabsize=4}
+\usepackage{polyglossia}
+\setdefaultlanguage{hebrew}
+\setotherlanguage{english}
+\begin{document}
+
+\section{מרחבים מטרים (מטריקות)}
+
+\subsection{מטריקות}
+
+\paragraph{אינטואיציה מקדימה}
+
+מטריקות הן הרחבה של צורת המדידה. למשל אפשר למדוד יחס בין שני נקודות
+במרחב \LRE{$R^{3}$} ע\textquotedblplain י מתיחת קו ישר בניהם (המסלול
+הקצר ביותר). זוהי צורת המדידה שאנחנו רגילים אליה. מטריקות באות להרחיב
+את שיטות המידה לצורות נוספות של מדידה, למשל למדוד מרחק בין שני נקודות
+ע\textquotedblplain י אורך קשת ברדיוס מסויים. בנוסף, מטריקות מרחיבות
+את האובייקטים עליהם אחנו מבצעים מדידה, למשל מדידה של מרחק או יחס מסויים
+בין פונקציות.
+
+לסיכום, מטריקות מגדירות קשר/יחס כלשהו בין שני אובייקטים במרחב כלשהו.
+נשים לב שמטריקות תמיד מחזירות סקלר.
+\begin{definition}
+\textit{מרחב מטרי} הוא זוג \LRE{$\left(X,\rho\right)$} של קבוצה לא
+ריקה \LRE{$X$} ופונקציה (מטריקה) \LRE{$\rho:X\times X\rightarrow\mathbb{R}$}
+כך ש-\LRE{$\rho$} מקיימת:
+\begin{enumerate}
+\item סימטריות: לכל \LRE{$x,y\in X$}, \LRE{$\rho\left(x,y\right)=\rho\left(y,x\right)$}.
+\item חיוביות: לכל \LRE{$x,y\in X$}, \LRE{$\rho\left(x,y\right)\geq0$}
+וגם \LRE{$\rho\left(x,y\right)=0$} אמ\textquotedblplain מ \LRE{$x=y$}.
+\item אי-שיוויון המשולוש מתקיים: לכל \LRE{$x,y,z\in X$} מתקיים \LRE{$\rho\left(x,z\right)\leq\rho\left(x,y\right)+\rho\left(z,y\right)$}.
+\end{enumerate}
+\end{definition}
+%
+
+\subsection{מטריקת נורמת \LRE{$p$}:}
+
+בהינתן מרחב \LRE{$\mathbb{R}^{d}$}נגדיר את המטריקה \LRE{$\left\Vert \cdot\right\Vert _{p}=\rho:\mathbb{R}^{d}\times\mathbb{R}^{d}\rightarrow\mathbb{R}$}
+, \LRE{$p\in\mathbb{N}$}, להיות \LRE{
+\begin{gather*}
+\left\Vert x,y\right\Vert _{p}=\left(\sum_{k=1}^{d}\left|x_{k}-y_{k}\right|^{p}\right)^{\frac{1}{p}}
+\end{gather*}
+}
+
+\paragraph{דוגמאות: }
+
+למשל עבור \LRE{$d=3$}, \LRE{$p=2$} נקבל את הנורמה הקלאסית על המרחב
+\LRE{
+\[
+\left\Vert x,y\right\Vert _{2}=\left(\sum_{k=1}^{3}\left|x_{k}-y_{k}\right|^{2}\right)^{\frac{1}{2}}=\sqrt{\left|x_{1}-y_{1}\right|^{2}+\left|x_{2}-y_{2}\right|^{2}+\left|x_{3}-y_{3}\right|^{2}}
+\]
+}ועבור \LRE{$d=1$}, \LRE{$p=1$} נקבל את הנורמה הקלאסית על ישר\LRE{
+\[
+\left\Vert x,y\right\Vert _{1}=\left(\sum_{k=1}^{1}\left|x_{k}-y_{k}\right|^{1}\right)^{\frac{1}{1}}=\left|x_{1}-y_{1}\right|
+\]
+}
+
+\paragraph{דוגמאות למעגל היחידה עבור נורמות שונות ב \LRE{$\mathbb{R}^{2}$}:}
+\begin{itemize}
+\item \LRE{$\left\Vert x\right\Vert _{1}=\sum_{i=0}^{n}\left|x_{i}\right|$}\\
+\begin{tikzpicture}
+
+\draw[->] (-2,0) -- (2,0);
+\draw[->] (0,-2) -- (0,2);
+
+\draw[rotate around={45:(0,0)}] (-1,-1) rectangle (1,1);
+
+\end{tikzpicture}
+\item \LRE{$\left|x\right|_{2}=\sqrt{\sum_{i=0}^{n}\left|x_{i}\right|^{2}}$}\\
+\begin{tikzpicture}
+
+\draw[->] (-2,0) -- (2,0);
+\draw[->] (0,-2) -- (0,2);
+
+\draw (0,0) circle (1);
+
+\end{tikzpicture}
+\item \LRE{$\left\Vert x\right\Vert _{\infty}=\max_{i\in n}\left|x_{i}\right|$}\\
+\begin{tikzpicture}
+
+\draw[->] (-2,0) -- (2,0);
+\draw[->] (0,-2) -- (0,2);
+
+\draw (-1,-1) rectangle (1,1);
+
+\end{tikzpicture}
+\end{itemize}
+
+\subsection{מטריקות על העתקות}
+
+ניתן להגדיר מטריקות על העתקות בצורה דומה למטריקות על נקודות. למשל
+נגדיר את המטריקה הקלאסית על העתקות:
+\begin{definition}
+\textit{המטריקה הקלאסית על העתקות לינאריות }
+
+נניח מטריקה \LRE{$\rho$} כלשהי על קבוצה \LRE{$X$} ונסמן \LRE{$\left|x\right|=\rho\left(x,\bar{0}\right)$},
+\LRE{$x\in X$}. נגדיר את ה\textit{מטריקה הקלאסית על העתקה ליניארית}
+\LRE{$a$} המיוצגת ע\textquotedblplain י המטריצה \LRE{$A$} בצורה
+הבאה:\LRE{
+\[
+\left|a\right|=\left\Vert A\right\Vert \coloneqq\max_{x\ne\bar{0}}\frac{\left\Vert Ax\right\Vert }{\left\Vert x\right\Vert }
+\]
+}
+\end{definition}
+או במילים, הגודל של ההעתקה \LRE{$a$} הוא השינוי בגדול ביותר המתקבל
+ע\textquotedblplain י הפעלת הההעתקה \LRE{$a$} על איבר כלשהו \LRE{$x$}.
+כלומר, אם ניקח את כל האיברים בקבוצה \LRE{$X$} ונפעיל על כולם את ההעתקה
+\LRE{$a$}, אז לכל איבר היחס בין האיבר המתקבל לבין האיבר המקורי הוא
+\LRE{$\frac{\left|Ax\right|}{\left|x\right|}$}, והמקסימום בין כל
+היחסים האלו מוגדר להיות הגודל של ההעתקה.
+
+\subsubsection{נורמה לוגריתמית (\textenglish[variant=american]{matrix measure})}
+
+הנורמה הלוגרתמית נותנת לנו מידע על השינוי (שיפוע) של ההעתקה במרחב.
+\begin{definition}
+\textit{נורמה לוגרתמית }
+
+תהי \LRE{$A$} מטריצה ריבועית ו- \LRE{$\left\Vert \cdot\right\Vert $}
+מטריקה על העתקה ליניארית. נגדיר את \textit{הנורמה הלוגרתמית} המתאימה
+לה\LRE{
+\[
+\mu\left(A\right)=\lim_{h\rightarrow0^{+}}\frac{\left\Vert I+hA\right\Vert -1}{h}
+\]
+}כאשר \LRE{$I$} היא מטריצת היחידה ו- \LRE{$0<h\in\mathbb{R}$}.
+\end{definition}
+\begin{english}[variant=american]%
+\url{https://en.wikipedia.org/wiki/Logarithmic_norm}\texthebrew{למידע
+נוסף }
+\end{english}%
+
+\section{קונטרקטביליות ויציבות}
+
+
+\paragraph{מוטיבציה}
+
+קשה מאוד עד בלתי אפשרי לחשב ע\textquotedblplain ע עצמיים של מטריצות
+גדולות אבל את \LRE{$\mu$} קל יותר לחשב. אי השוויון נותן לנו דרך לחסום
+את הנורמה של ווקטורי מצב לפי הזמן וכך לתת לנו מידע על ההתנהגות של
+וקטורים אלו.
+
+\subsection{אי שוויון קופל (\textenglish[variant=american]{coppel's inequality})}
+
+תהי מע' משוואות מצב עם ווקטור \LRE{$\bar{x}$}. נסמן \LRE{
+\begin{eqnarray*}
+\bar{x}=f\left(x\right), & J\left(\bar{x}\right)=\frac{\partial\bar{f}}{\partial\bar{x}}, & x\left(0\right)=a
+\end{eqnarray*}
+}כאשר \LRE{$J$} הוא היעקוביאן.
+
+אם ניקח תנאי התחלה \LRE{$a^{1},a^{2}$} בתחום \LRE{$D\subseteq\mathbb{R}^{n}$}
+אז\LRE{
+\[
+\left|\bar{x}\left(t,a^{1}\right)-\bar{x}\left(t,a^{2}\right)\right|\leq e^{\int_{0}^{t}\mu\left(J\left(\alpha\right)\right)d\alpha}\left\Vert a^{1}-a^{2}\right\Vert 
+\]
+}כאשר עבור הפשטות ניתן לקרב ע\textquotedblplain י \textbf{חסם עליון}\LRE{
+\[
+e^{\int_{0}^{t}\mu\left(J\left(\alpha\right)\right)d\alpha}\approx e^{t\cdot\max_{x\in\mathbb{R}^{n}}\mu\left(J\left(\bar{x}\right)\right)}
+\]
+}
+\begin{definition}
+\textit{קונטרקטביליות}
+
+מערכת משוואות מצב תיקרא \textit{קונטרקטבילית} בתחום \LRE{$D\subseteq\mathbb{R}^{n}$}
+אם מתקיימים התנאים הבאים:
+\begin{itemize}
+\item מתקיים אי-שיוויון קופל.
+\item הנורמה הלוגרתמית שלילית (\LRE{$\mu<0$}) בתחום \LRE{$D$}.
+\end{itemize}
+\end{definition}
+לכן כדי למצוא קורדינאטות נדרוש \LRE{$\mu<0$} בכל התחום \LRE{$D$}.
+
+
+\subsection{קונטרקטיביליות ויציבות}
+\begin{definition}
+\textit{יציבות של מערכת קונטרקטבילית}
+
+מערכת משוואות מצב קונטרקטבילית בתחום \LRE{$D$} \textit{יציבה} אם
+יש בתחום \LRE{$D$} בדיוק נקודת שיווי משקל יחידה.
+\end{definition}
+
+\subsubsection{מציאת תחום היציבות עבור מערכת משוואות מצב}
+
+בהינתן מערכת משוואות מצב במרחב \LRE{$\mathbb{R}^{n}$} נרצה למצוא
+תחום בו המערכת היא קונטרקטבילית ויציבה. דרגת החופש שלנו היא בחירת
+המטריקה המגדירה את התחום. ניתוח זה מאפשר לנו למצוא תנאים על משתני
+וקטור המצב עבורם המערכת יציבה.
+
+נתמקד בנורמות \LRE{$L_{1},L_{2},L_{\infty}$} שהן השימושיות ופשוטות
+לחישוב בדרך כלל:
+\begin{enumerate}
+\item מטריקת \LRE{$L_{1}$}:\LRE{
+\begin{eqnarray*}
+\left\Vert x\right\Vert _{1}=\sum_{i=0}^{n}\left|x_{i}\right| & \Rightarrow & \mu_{1}\left(A\right)=\max_{j}\left\{ A_{jj}+\sum_{i=1,i\ne j}^{n}\left|A_{ij}\right|\right\} 
+\end{eqnarray*}
+}כאשר \LRE{$i$} אינדקס השורות ו-\LRE{$j$} אינדקס העמודות של המטריצה
+\LRE{$A$}. 
+\item מטריקת \LRE{$L_{2}$}:\LRE{
+\begin{eqnarray*}
+\left\Vert x\right\Vert _{2}=\sqrt{\sum_{i=0}^{n}\left|x_{i}\right|^{2}} & \Rightarrow & \mu_{2}\left(A\right)=\lambda_{max}\left(\frac{A+A^{T}}{2}\right)
+\end{eqnarray*}
+}
+\item מטריקת \LRE{$L_{\infty}$}:\LRE{
+\begin{eqnarray*}
+\left\Vert x\right\Vert _{\infty}=\max_{i\in n}\left|x_{i}\right| & \Rightarrow & \mu_{\infty}\left(A\right)=\max_{i}\left\{ A_{ii}+\sum_{j=1,j\ne i}^{n}\left|A_{ij}\right|\right\} 
+\end{eqnarray*}
+}אשר \LRE{$i$} אינדקס השורות ו-\LRE{$j$} אינדקס העמודות של המטריצה
+\LRE{$A$}. 
+\end{enumerate}
+הערה: כאשר \LRE{$\mu=0$} אמנם אין התכנסות לנקודת שיווי המשקל אך המרחק
+בין וקטור המצב לנקודת שיווי המשקל קבוע. מצב זה אינו רצוי בדרך כלל
+אך גם אינו מתבדר.
+
+\paragraph{דוגמא}
+
+נניח מערכת הנתונה ע\textquotedblplain י משוואות המצב\LRE{
+\begin{align*}
+ & \frac{dx_{1}}{dt}=-x_{1}-x_{1}x_{2}\\
+ & \frac{dx_{2}}{dt}=x_{1}+x_{2}
+\end{align*}
+}נק' ש\textquotedblplain מ של המערכת הן \LRE{$\left(0,0\right),\left(-1,-1\right)$}.
+יש יותר מנקודת שיווי משקל אחת ולכן המערכת אינה קונטרקטבילית בכל מרחב
+המצב.
+
+נחשב את היעקוביאן של המערכת\LRE{
+\begin{gather*}
+J\left(\bar{x}\right)=\frac{\partial\bar{f}}{\partial\bar{x}}=\left[\begin{array}{cc}
+-1-x_{2} & -x_{1}\\
+1 & -1
+\end{array}\right]
+\end{gather*}
+}כעת נחשב את \LRE{$\mu\left(J\left(\bar{x}\right)\right)$} עבור המטריקות
+\LRE{$L_{1},L_{2},L_{\infty}$} ונבדוק אם קיים תחום בו \LRE{$\mu\left(J\left(\bar{x}\right)\right)<0$}:
+\begin{enumerate}
+\item \LRE{$L_{1}$}: \LRE{
+\[
+\mu_{1}\left(J\right)=\max_{j}\left\{ A_{jj}+\sum_{i=1,i\ne j}^{n}\left|A_{ij}\right|\right\} =\max\left\{ -1-x_{2}+1,-1+\left|x_{1}\right|\right\} =\max\left\{ -x_{2},-1+\left|x_{1}\right|\right\} 
+\]
+}נקבל שני תחומים בהם \LRE{$\mu_{1}<0$} כלומר תחומים בהם המערכת קונטרקטבילית:
+\begin{itemize}
+\item \LRE{$0>\mu_{1}=-x_{2}>-1+\left|x_{1}\right|$} 
+\item \LRE{$-x_{2}<-1+\left|x_{1}\right|=\mu_{1}<0$}
+\end{itemize}
+בשני המקרים נקודות הש\textquotedblplain מ נמצאות מחוץ לתחום ולכן לא
+מובטח לנו יציבות.
+\item \LRE{$L_{2}$}:\LRE{
+\[
+\mu_{2}\left(J\right)=\lambda_{max}\left(\frac{J+J^{T}}{2}\right)=\lambda_{max}\left[\begin{array}{cc}
+-1-x_{2} & \frac{1-x_{1}}{2}\\
+\frac{1-x_{1}}{2} & -1
+\end{array}\right]
+\]
+}הערכים העצמיים של המטריצה מקיימים\LRE{
+\[
+\left|\begin{array}{cc}
+\lambda+x_{2}+1 & \frac{x_{1}-1}{2}\\
+\frac{x_{1}-1}{2} & \lambda+1
+\end{array}\right|=\left(\lambda+x_{2}+1\right)\left(\lambda+1\right)-\left(\frac{x_{1}-1}{2}\right)^{2}=\lambda^{2}+\left(x_{2}+2\right)\lambda+x_{2}+1-\left(\frac{x_{1}-1}{2}\right)^{2}=0
+\]
+}אנחנו מחפשים \LRE{$\lambda$} מקסימלי כך ש \LRE{$\mu_{2}\left(J\right)<0$}
+כלומר \LRE{$\lambda_{max}<0$}. נשתמש במבחן \LRE{$RH$} כדי למצוא
+תנאי על \LRE{$x_{1},x_{2}$} עבורו זה ייתקיים\LRE{
+\begin{align*}
+\lambda_{2} &  &  & 1 &  & x_{2}+1-\left(\frac{x_{1}-1}{2}\right)^{2}\\
+\lambda_{1} &  &  & x_{2}+2 &  & 0\\
+\lambda_{0} &  &  & x_{2}+1-\left(\frac{x_{1}-1}{2}\right)^{2} &  & 0
+\end{align*}
+}כלומר נדרוש\LRE{
+\begin{eqnarray*}
+x_{2}+2>0 & \Rightarrow & x_{2}>-2
+\end{eqnarray*}
+}וגם\LRE{
+\begin{gather*}
+x_{2}+1-\left(\frac{x_{1}-1}{2}\right)^{2}>0\\
+4x_{2}+4-x_{1}^{2}+2x_{1}-1>0\\
+\Downarrow\\
+4x_{2}>x_{1}^{2}-2x_{1}-3
+\end{gather*}
+}כלומר התחום מעל פרבולה החותכת את ציר \LRE{$x_{1}$} בנקודות \LRE{$-1,3$}
+ונקודת המינימום שלה היא \LRE{$\left(1,-1\right)$}, בתחום זה המערכת
+היא קונטרקטבילית. אנחנו מחפשים תחום שבו המערכת תהיה יציבה לכן נדרוש
+בנוסף שהמרחק של וקטור בתחום מנקודת שיווי המשקל יהיה קטן מהמרחק הקצר
+ביותר מנקודת השיווי משקל \LRE{$\left(0,0\right)$} לפרבולה.\\
+נקודה כללית על הפרבולה היא \LRE{$\bar{x}_{p}=\left(x_{1},\frac{x_{1}^{2}-2x_{1}-3}{4}\right)$}
+לכן מרחק נקודה כללית על הפרבולה מהראשית היא\LRE{
+\[
+\left|\bar{x}_{p}-\bar{0}\right|=\sqrt{\left(x_{1}\right)^{2}+\left(\frac{x_{1}^{2}-2x_{1}-3}{4}\right)^{2}}
+\]
+} המרחק המינימלי הוא \LRE{$d_{min}\approx0.647$} ומתקבל עבור \LRE{$x_{1}\approx-0.364$}.\\
+מרחק זה מגדיר לנו מעגל \LRE{$D$} (כי הנורמה היא \LRE{$L_{2}$}) ברדיוס
+\LRE{$d_{min}$} סביב נקודת השיווי משקל \LRE{$a_{1}=\bar{0}$} כל
+שלכל וקטור התחלה \LRE{$a_{2}$} מתקיים\LRE{
+\[
+\left|\bar{x}\left(t,a^{1}\right)-\bar{x}\left(t,a^{2}\right)\right|\leq e^{\int_{0}^{t}\mu_{2}\left(J\left(\alpha\right)\right)d\alpha}\left|a^{1}-a^{2}\right|\leq e^{\int_{0}^{t}\mu_{2}\left(J\left(\alpha\right)\right)d\alpha}d_{min}
+\]
+}כאשר \LRE{$\mu_{2}<0$} כלומר כל וקטור מצב בתחום \LRE{$D$} יתכנס
+בהכרח לנקודת השיווי משקל ולכן בתחום \LRE{$D$} המערכת יציבה.
+\item \LRE{$L_{\infty}$}:\LRE{
+\[
+\mu_{\infty}\left(J\right)=\max_{i}\left\{ A_{ii}+\sum_{j=1,j\ne i}^{n}\left|A_{ij}\right|\right\} =\max\left\{ -1-x_{2}+\left|x_{1}\right|,0\right\} \geq0
+\]
+}תמיד אי-שלילי ולכן אין תחום קונטרקטבילי.
+\end{enumerate}
+
+\section{תוספת}
+
+\subsection{שימוש בדימיון מטריצות על מנת להגידר נורמה אחרת}
+
+\LRE{$P$} מטריצה הפיכה. נגדיר נורמה\LRE{
+\[
+\left|x\right|_{P}:=\left|Px\right|
+\]
+}ו-\LRE{
+\[
+\mu_{P}\left(A\right)=\mu\left(P^{-1}AP\right)
+\]
+}
+
+.
+
+\subsection{קריטריון ליאפונוב}
+
+מערכת משוואות ממצב ליניאריות\LRE{
+\[
+\dot{x}=Ax
+\]
+}מערכת עם \LRE{$A$}יציבה אם\LRE{
+\[
+\forall Q,P>0:A^{T}P+PA=-Q
+\]
+}
+
+ניתן גם להניח \LRE{$Q$}, למשל \LRE{$Q=I$}, ואז לפתור מערכת משוואות
+ולמצוא \LRE{$P$} (\LRE{$P$} תהיה סימטרית) .
+
+
+\subsection{תיקון הגדרה לקונטרקטיביות:}
+
+מערכת דיגימת\LRE{
+\[
+\dot{x}=f\left(x\right)
+\]
+}\LRE{
+\[
+a,b\in R^{b}
+\]
+} מע נקראת קונטרקטבילית אם \LRE{
+\[
+\left|x\left(t,a\right)-x\left(t,b\right)\right|\leq e^{-\eta t}\left|a-b\right|
+\]
+}
+
+
+\paragraph{משפט\textmd{ }3}
+
+אם נתונה מע' \LRE{$f$} ומתקיים\LRE{
+\[
+\mu\left(J\left(x\right)\right)\leq\eta<0,\forall x\in R^{n}
+\]
+}אפילו כאשר נתון תחום \LRE{$\Omega$} של \LRE{$R^{n}$} עם תנאי התחלה
+על התחום
+
+\newpage{}
+
+\section{משוואות מצב של מערכות הספק}
+
+הערה: בקורס למדנו את מערכת המשוואות לאחר קירוב \textenglish[variant=american]{dc
+power flow}, פה נרצה את המשוואות ללא קירוב.
+
+\subsection{משוואות זרימת ההספק{\normalsize{} }\textenglish[variant=american]{power
+flow equations} ומשוואת{\normalsize{} }\textenglish[variant=american]{swing}}
+
+בהינתן מערכת הספק בעלת \LRE{$N$} פסי צבירה, ההספק של פסי הצבירה \LRE{$i$}
+נתון ע\textquotedblplain י \LRE{
+\[
+P_{i}=\sum_{n=1}^{N}\left|V_{i}\right|\left|V_{n}\right|\left|y_{i,n}\right|\cos\left(\delta_{n}-\delta_{i}+\theta_{i,n}\right)+P_{L,i}
+\]
+}\LRE{$\forall i=1,\dots,n$}\LRE{
+\[
+Q_{i}=\sum_{n=1}^{N}\left|V_{i}\right|\left|V_{n}\right|\left|y_{i,n}\right|\sin\left(\delta_{n}-\delta_{i}+\theta_{i,n}\right)+Q_{L,i}
+\]
+}
+
+כאשר:
+\begin{itemize}
+\item \LRE{$P_{i}$},\LRE{$Q_{i}$} - הספק אקטיבי וריאקטיבי של הגנרטור 
+\item \LRE{$\left|V_{i}\right|$}- אמפליטודת המתח 
+\item \LRE{$\delta_{i}$} - פאזת המתח
+\item \LRE{$\left|y_{i,n}\right|$}, \LRE{$\theta_{i,n}$} - גודל וזווית
+אלמנט \LRE{$i,n$} מטריצת האדמינטנסים
+\item \LRE{$P_{L,i}$},\LRE{$Q_{L,i}$} - הספק אקטיבי וריאקטיבי של עומס 
+\end{itemize}
+בנוסף לכל גנרטור \LRE{$i$}, הדינמיקה של הגנרטור מתוארת ע\textquotedblplain י
+\LRE{
+\[
+\frac{d}{dt}\omega_{i}=K\left(3P_{ref}-3P_{i}-\frac{1}{D}\left(\omega_{i}-\omega_{s}\right)\right)
+\]
+}
+
+כאשר:
+\begin{itemize}
+\item \LRE{$P_{ref}$} - ההספק הנדרש מהגנרטור (פאזה אחת)
+\item \LRE{$P_{i}$} - ההספק בפועל מהגנרטור לפי משוואות זרימת ההספק
+\item \LRE{$D$} - מקדם ריסון
+\item \LRE{$\omega$} - תדר הגנרטור
+\item \LRE{$\omega_{s}$} - תדר העבודה של המערכת
+\end{itemize}
+בנוסף מתקיים הקשר בין תדר הגנרטור לפאזת המתח שלו\LRE{
+\[
+\frac{d}{dt}\delta_{i}=\omega_{i}-\omega_{r}
+\]
+}כאשר:
+\begin{itemize}
+\item \LRE{$\omega_{r}$} - תדר הייחוס של המערכת. נהוג לבחור את תדר הייחוס
+כך ש- \LRE{$\delta_{1}=0$}.
+\end{itemize}
+יחדיו, משוואות אלו מאפיינות לנו מערכת מצב של המערכת שהמשתני המצב שלה
+הם (ומתארים את האנרגיה במערכת) \LRE{
+\[
+\bar{x}=\left\{ \delta_{i},\omega_{i}:\forall i=1,\dots,n\right\} 
+\]
+}
+
+\subsection{מודל חסר הפסדים}
+
+נניח את ההנחות הבאות כדי לקבל מודל פשוט (בדומה לסיכום על \LRE{$N$}
+גנרטורים).
+\begin{itemize}
+\item רשת ההולך אינה מכילה עומסים. כלומר כל העומסים מחוברים לגנרטור כלשהו
+במערכת.
+\item רשת ההולכה חסרת הפסדים ובעלת השראות בלבד.
+\item אין עומסים ריאקטיביים.
+\end{itemize}
+עבור הנחות אלו נקבל\LRE{
+\begin{eqnarray*}
+\left|y_{i,n}\right|=\left|y_{n,i}\right|, & \forall i:\,\theta_{i,i}=-\frac{\pi}{2}, & \forall i\neq j:\,\theta_{i,j}=\frac{\pi}{2}
+\end{eqnarray*}
+}וכתוצאה מכך \LRE{$\forall i=1,\dots,n$}\LRE{
+\begin{align*}
+ & P_{i}=\sum_{n=1}^{N}a_{i,n}\sin\left(\delta_{i}-\delta_{n}\right)+P_{L,i}\\
+ & Q_{i}=0
+\end{align*}
+}כאשר:
+\begin{itemize}
+\item \LRE{$a_{i,n}=\left|V_{i}\right|\left|V_{n}\right|\left|y_{i,n}\right|>0$},
+\LRE{$a_{i,n}=a_{n,i}$}
+\item בנקודות שיווי המשקל של המערכת כל תדרי המערכת שווים \LRE{$\forall i:\omega_{i}=\omega_{1}=\omega_{s}$}
+\end{itemize}
+
+\subsubsection{גנרטור ורשת קשיחה}
+
+נניח גנרטור יחיד עם חיבור לרשת קשיחה בתדר \LRE{$\omega_{1}=\omega_{s}$}
+עם מתח \LRE{$V\left(t\right)=\left|V_{1}\right|\angle0^{\circ}$}
+(\LRE{$\delta_{1}=0$}). הרשת הקשיחה הינה מקור אידיאלי ואינה משתנה
+ולכן מכתיבה ייחוס עבור התדר \LRE{$\omega_{r}=\omega_{s}$}. כיוון
+שהנחנו שאין הפסדים ברשת ההולכה, הרשת הקשיחה קובעת את המתח לכל פסי
+הצבירה \LRE{$\forall i:\left|V_{i}\right|=\left|V_{1}\right|$}.
+
+נסמן את הגנרטור ב- \LRE{$i=2$}. נקבל את המשוואות\LRE{
+\begin{align*}
+ & \delta_{1}=0\\
+ & \frac{d}{dt}\omega_{2}=K\left(3P_{ref}-3P_{2}-\frac{1}{D}\left(\omega_{2}-\omega_{s}\right)\right)\\
+ & \frac{d}{dt}\delta_{2}=\omega_{2}-\omega_{s}\\
+ & P_{2}=\sum_{n=1}^{N}a_{2,n}\sin\left(\delta_{2}-\delta_{n}\right)+P_{L,2}=a_{2,1}\sin\left(\delta_{2}-\delta_{1}\right)+P_{L,2}
+\end{align*}
+} משוואות המצב של המערכת הן\LRE{
+\[
+\begin{cases}
+\frac{d}{dt}\delta_{2}=\omega_{2}-\omega_{s}\\
+\frac{d}{dt}\omega_{2}=3K\left(P_{ref}-P_{L,2}\right)-3Ka_{2,1}\sin\left(\delta_{2}\right)-\frac{K}{D}\left(\omega_{2}-\omega_{s}\right)
+\end{cases}
+\]
+}נחשב את היעקוביאן של המערכת\LRE{
+\[
+J=\left[\begin{array}{cc}
+0 & 1\\
+-3Ka_{2,1}\cos\left(\delta\right) & -\frac{K}{D}
+\end{array}\right]
+\]
+}
+
+\subsubsection{2 גנרטורים}
+
+נבחר ייחוס \LRE{$\omega_{1}=\omega_{r}$} - כרגע לא מתעסקים
+\end{document}
