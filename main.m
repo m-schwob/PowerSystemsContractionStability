@@ -20,7 +20,7 @@ omega_res = 0.1;
 delta_res = 0.1;
 
 % define Jacobian formula
-J = @(d, w) [0, 1; -3 * K * a_21 * cos(d), -K / D];
+J = @(d, w) [0, 1; -3 * K * a_21 * cos(d), -K / D]; % d is up
 
 % define numerical grid
 [delta_2, omega_2] = meshgrid(delta_min:delta_res:delta_max, omega_min:omega_res:omega_max);
