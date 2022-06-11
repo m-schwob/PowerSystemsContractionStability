@@ -1,20 +1,20 @@
 clear;clc;close all;
 %simulation parameters
-K = 8.73e-7;
+K = 8.73e-6;
 D = 0.18*K;
 P_ref = 4e6;
 P_L = -5e6;
 ws = 50*2*pi;
 a_21 = (12e3)^2 * abs(-1/(1j*ws*0.0275));
 %set simulation timescale
-t_final = 30;
-t_max_step = 0.05;
-T_t = [3.2481 0.3602; 0.3602 0.5492];
+t_final = 10;
+t_max_step = 0.01;
+T_t = [3.3289 0.0415; 0.0415 0.1623];
 T = T_t^-1;
 
 %simulation inputs
 w_array = 49:1:51;
-d_0_array = -pi/2:1:pi/2;
+d_0_array = -pi/2:pi/4:pi/2;
 for ij = 1:length (w_array)
     for ii = 1:length(d_0_array)
     w_0 = w_array(ij)*2*pi;
@@ -55,7 +55,7 @@ for ij = 1:length (w_array)
     ylabel ('P norm of distance to eq. points')
     xlim ([0,2]);
     legend ('data','exponent')
-    title(['start point w=',num2str(w(1)/(2*pi)),'Hz, d2=',num2str(d2(1)),'rad'])
+    title(['start point w=',num2str(w(1)/(2*pi)),'Hz, d2=',num2str(d2(1)/pi),'rad/\pi'])
 
     end
 end

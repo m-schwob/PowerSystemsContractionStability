@@ -3,7 +3,7 @@ clear all; close all; clc;
 
 % define system constants
 global K D a_21 P_ref ws P_L1 P_L2
-K = 8.73e-7;
+K = 8.73e-6; %0.7 works best
 D = 0.18 * K;
 P_ref = 4e6;
 ws = 50 * 2 * pi;
@@ -19,7 +19,8 @@ delta_max = pi / 2; % rad
 omega_res = 0.1;
 delta_res = 0.1;
 
-% for 2 gen case
+%{ 
+for 2 gen case
 p_ref1 = p_ref;
 p_ref2 =p_ref;
 P_L1 = p_ref;
@@ -28,9 +29,9 @@ K1 =K;
 K2 = K;
 D1=D;
 D2=D;
-
+%}
 % F = @(d2, w1, w2, P_1, P_2) [w2-w1 ; K1(3*p_ref1 -3*P_1 - )];
-J =
+
 
 % define Jacobian formula
 J = @(d, w) [0, 1; -3 * K * a_21 * cos(d), -K / D]; % d is up
@@ -92,9 +93,11 @@ function equilibrium_points = solve_power_flow()
     equilibrium_points{2} = [pi - (asin(P_ref / a_21)), 0]; % (delta,omega) point
 end
 
+%{
 function equilibrium_points = solve_power_flow(delta_2, omega_2)
     global P_ref a_21 P_L1 P_L2
     P_1 = -a_21 * sin(delta_2) +P_L1;
     P_2 = a_21 * sin(delta_2) +P_L2;
 
 end
+%}
