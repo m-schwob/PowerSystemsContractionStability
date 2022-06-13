@@ -1,4 +1,4 @@
-clear all; close all; clc;
+clear; close all; clc;
 %  SYSTEM DEFINITIONS  %
 
 % define system constants
@@ -8,12 +8,12 @@ D = 0.18 * K;
 P_ref = 4e6;
 P_L = -5e6;
 ws = 50 * 2 * pi;
-a_21 = (12e3)^2 * abs(-1 / (1j * ws * 0.0275));
+a_21 = (12e3)^2 * abs(1 / (1j * ws * 0.0275));
 
 
 % define boundaries
-w_min = 49 * 2 * pi; % rad/sec
-w_max = 51 * 2 * pi; % rad/sec
+omega_min = 49 * 2 * pi; % rad/sec
+omega_max = 51 * 2 * pi; % rad/sec
 delta_min = -pi / 2; % rad
 delta_max = pi / 2; % rad
 
@@ -22,14 +22,14 @@ t_final = 10;
 t_max_step = 0.01;
 
 % define resolutions
-w_res = 0.01;
+omega_res = 0.01;
 delta_res = 0.01;
 
 % define Jacobian formula
 J = @(d) [0, 1; -3 * K * a_21 * cos(d), -K / D]; % d is up
 
 % define numerical grid
-[delta_2, omega_2] = meshgrid(delta_min:delta_res:delta_max, w_min:w_res:w_max);
+[delta_2, omega_2] = meshgrid(delta_min:delta_res:delta_max, omega_min:omega_res:omega_max);
 
 %  ALGORITHM  %
 
@@ -68,8 +68,7 @@ for i = 1:size(equilibrium_points, 2)
     mu_matrix_L2 = grid_matmis(A, delta_2, omega_2, 'L2');
     MU = real(mu_matrix_L2); %remove numerical complex error 
     %     mu_matrix_Linf = grid_matmis(A, delta_2, omega_2, 'Linf');
-
-    %find the minimal P_final-norm
+     %find the minimal P_final-norm
     mat_P_norm = 0*delta_2;
     for row = 1:length(delta_2(:,1))
         for col = 1:length(delta_2(1,:))
@@ -88,8 +87,9 @@ for i = 1:size(equilibrium_points, 2)
     figure(1)
     hold on;
     contourf(delta_2/pi, omega_2/(2*pi), -MU, [0, 0]);% minus for coloring negative values
-    contour(delta_2/pi, omega_2/(2*pi), mat_P_norm, [min_dist,min_dist]);
-    scatter (d_eq/pi,w_eq/(2*pi),'b*')
+    %contourf(delta_2/pi, omega_2/(2*pi), -j_array, [0, 0]);% minus for coloring negative values
+    contour(delta_2/pi, omega_2/(2*pi), mat_P_norm, [min_dist,min_dist],'red');
+    scatter (d_eq/pi,w_eq/(2*pi),'*')
     axis square;
     xlabel('delta 2 [rad/\pi]')
     ylabel('omega [Hz]')
@@ -99,6 +99,7 @@ for i = 1:size(equilibrium_points, 2)
     figure (2);
     hold on;
     plot(delta_2/pi, mu_matrix_L2(1, :));
+    xline(d_eq/pi);
     xlabel('delta 2 [rad/\pi]')
     ylabel('matrix measure')
     title('the matrix measure of the jacovian in defferent angles')
@@ -124,14 +125,19 @@ for ij = 1:length (w_array)
         %ylim([46,54]);
 
         %plot distance in P terms
-        dist_w = w-w(length(w));
-        dist_d2 = d2-d2(length(d2));
+
         norm_P = 0*w;
         for in = 1:length(w)
             norm_P(in) = p_norm(P_final,d2(in),w(in),d2(length(d2)),w(length(w)));
         end
-        e_time = norm_P(1)*exp(-time);
-        
+        %calculate the bound
+        d2_min = min(d2);
+        d2_max = max(d2);
+        %MU_area = MU(delta_2<=d2_max & delta_2>= d2_min & MU<0);
+        MU_area = MU(mat_P_norm<=min_dist);
+        MU_max = max(MU_area(:));
+        e_time = norm_P(1)*exp(time*MU_max);
+        %{
         figure;
         hold on;
         plot (time,norm_P)
