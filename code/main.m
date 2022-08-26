@@ -11,6 +11,7 @@ ws = 50 * 2 * pi;
 a_21 = (12e3)^2 * abs(1 / (1j * ws * 0.0275));
 
 
+
 % define boundaries
 omega_min = 49 * 2 * pi; % rad/sec
 omega_max = 51 * 2 * pi; % rad/sec

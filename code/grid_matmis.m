@@ -4,7 +4,7 @@ function MU = grid_matmis(func_A, delta_2, omega_2, L)
     MU = zeros(x_size, y_size);
     for x = 1:x_size
         for y =1:y_size
-            MU(x,y) = matmis(func_A(delta_2(x,y), omega_2(x,y)), L);
+            MU(x,y) = matmis(func_A(delta_2(x,y)), L);
         end
     end
 end
