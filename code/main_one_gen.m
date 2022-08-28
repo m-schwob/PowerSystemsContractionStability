@@ -26,13 +26,13 @@ w_res = 0.01;
 d2_res = 0.01;
 
 % define Jacobian formula
-J = @(d) [0, 1; -3 * K * a_21 * cos(d), -K / D]; % d is up
+J = @(d) [ -K / D, -3 * K * a_21 * cos(d);1 0]; % (w,d)
 
 % define numerical grid
 d2 = d2_min:d2_res:d2_max;
 w = w_min:w_res:w_max;
-len_x = length(d2);
-len_y = length(w);
+len_x = length(w);
+len_y = length(d2);
 %  ALGORITHM  %
 
 % 1. Solve the power flow for the system (the solution is an equilibrium point of the dynamics).
@@ -68,8 +68,8 @@ for i = 1:size(equilibrium_points, 2)
     temp_mat = zeros(2);
     for x = 1:len_x
         for y = 1:len_y
-            mu_matrix_L2(x,y) = matmis(A(d2(x)),'L2');
-            temp_mat = P_final*[d2(x)-d2_eq;w(y)-w_eq];
+            mu_matrix_L2(x,y) = matmis(A(d2(y)),'L2');
+            temp_mat = P_final*[w(x)-w_eq;d2(y)-d2_eq];
             mat_P_norm(x,y) = norm(temp_mat);
         end
     end
@@ -80,17 +80,17 @@ for i = 1:size(equilibrium_points, 2)
 
     figure(1)
     hold on;
-    contourf(w/(2*pi),d2/pi,-MU, [0,0],'red');
-    scatter(w_eq/(2*pi),d2_eq/pi, '*')
-    contour(w/(2*pi), d2/pi, mat_P_norm, [min_dist,min_dist],'red');
-    ylabel('delta 2 [rad/\pi]')
-    xlabel('omega 1 [Hz]')
-    title('Areas where \mu <0')
+    contourf(d2/pi,w/(2*pi),-MU, [0,0],'red');
+    scatter(d2_eq/pi,w_eq/(2*pi), '*')
+    contour(d2/pi, w/(2*pi), mat_P_norm, [min_dist,min_dist],'red');
+    xlabel('delta 2 [rad/\pi]')
+    ylabel('omega 1 [Hz]')
+    title('Area where \mu <0')
     hold off;
 
     figure (2);
     hold on;
-    plot(d2/pi, MU(:,1));
+    plot(d2/pi, MU(1,:));
     xline(d2_eq/pi);
     yline(0)
     xlabel('delta 2 [rad/\pi]')
@@ -121,7 +121,8 @@ for i = 1:size(equilibrium_points, 2)
 
             norm_P = 0*w_sim;
             for in = 1:length(w_sim)
-                norm_P(in) = p_norm(P_final,d2_sim(in),w_sim(in),d2_sim(end),w_sim(end));
+                temp_mat = P_final*[w_sim(in)-w_eq;d2_sim(in)-d2_eq];
+                norm_P(in) = norm(temp_mat);
             end
             %calculate the bound
             e_time = 0*time;
@@ -132,13 +133,14 @@ for i = 1:size(equilibrium_points, 2)
                     [~,idx_w] = min(abs(w_sim(t_in)-w));
                     if (t_in ~=1)
                     [~,idx] = min(norm_P(norm_P>0));    
-                    integral = integral + (time(t_in)-time(t_in-1))*200*(MU(idx_d2,idx_w)-MU(idx_d2_prev,idx_w_prev));
+                    integral = integral + (time(t_in)-time(t_in-1))*200*(MU(idx_w,idx_d2)-MU(idx_w_prev,idx_d2_prev));
                     end
                     idx_w_prev = idx_w;
                     idx_d2_prev = idx_d2;
                 end
                 e_time(t) = norm_P(1)*exp(integral*time(t));
             end
+            %
             figure;
             hold on;
             plot (time,norm_P)
@@ -155,13 +157,17 @@ for i = 1:size(equilibrium_points, 2)
             exp_smaller_than_norm = e_time<norm_P;
             figure(1)
             hold on
+            
             if (sum(exp_smaller_than_norm)>0)
-                scatter(w_0/(2*pi),d_0/pi,'rx');
+                scatter(d_0/pi,w_0/(2*pi),'rx');
             else
-                scatter (w_0/(2*pi),d_0/pi,'gx');
+                scatter (d_0/pi,w_0/(2*pi),'gx');
             end
         end
     end
+    figure(3)
+    hold on
+    scatter(d2_eq/pi,w_eq/(2*pi),'o')
 end
 
 function equilibrium_points = solve_power_flow()
