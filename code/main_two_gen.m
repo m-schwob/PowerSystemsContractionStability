@@ -83,7 +83,7 @@ idx_to_dist = find(mat_P_norm<=min_dist);
 [idx_x,idx_y,idx_z] = ind2sub([len_x,len_y,len_z],idx_to_dist);
 w1_dist = w1(idx_x);
 w2_dist = w2(idx_y);
-[~,d2_dist] = meshgrid(d2(idx_z),d2(idx_z));
+[~,d2_dist] = meshgrid(d2(idx_z),d2(idx_z)); % i think this is the problem in figure 2 (Nina)
 
 figure(1)
 hold on;
@@ -94,10 +94,14 @@ ylabel('omega 1 [Hz]')
 title('Areas where \mu <0')
 hold off;
 
-%{
+%
 figure (2);
 hold on;
 surf(w1_dist/(2*pi),w2_dist/(2*pi),d2_dist/pi);
+zlabel('delta 2 [rad/\pi]')
+ylabel('omega 2 [Hz]')
+xlabel('omega 1 [Hz]')
+title('Areas where the distance in P tem is less than the minimal distance to the line where \mu=0')
 %}
 
 % run the rest of the simulations
@@ -132,17 +136,20 @@ for ij = 1:length (w1_array)
             for t = 1:length(time)
                 integral = 0;
                 for t_in = 1:t
-                    [~,idx_d2] = min(abs(d2_sim(t_in)-d2));
-                    [~,idx_w1] = min(abs(w1_sim(t_in)-w1));
-                    [~,idx_w2] = min(abs(w2_sim(t_in)-w2));
+                    [~,idx_d2] = min(abs(d2_sim(t_in)-d2)); % index of the d2 end point
+                    [~,idx_w1] = min(abs(w1_sim(t_in)-w1)); % index pf the w1 end point
+                    [~,idx_w2] = min(abs(w2_sim(t_in)-w2)); % index pf the w2 end point
                     if (t_in ~=1)
-                        integral = integral + (time(t_in)-time(t_in-1))*200*(MU(idx_w1,idx_w2,idx_d2)-MU(idx_w1_prev,idx_w2_prev,idx_d2_prev));
+                    temp_vec_dist = P_final *[w1_sim(t_in)-w1_sim(t_in-1);w2_sim(t_in)-w2_sim(t_in-1);d2_sim(t_in)-d2_sim(t_in-1)];
+                    route_dist = norm(temp_vec_dist);
+                    MU_dist = MU(idx_w1,idx_w1,idx_d2)-MU(idx_w1_prev,idx_w2_prev,idx_d2_prev);
+                    integral = integral + route_dist*MU_dist;
                     end
-                    idx_w1_prev = idx_w1;
-                    idx_w2_prev = idx_w2;
-                    idx_d2_prev = idx_d2;
+                    idx_w1_prev = idx_w1; % index fow the w starting point gor next time
+                    idx_w2_prev = idx_w2; % index fow the w starting point gor next time
+                    idx_d2_prev = idx_d2;  % index fow the w starting point gor next time
                 end
-                e_time(t) = norm_P(1)*exp(integral*time(t));
+                e_time(t) = norm_P(1)*exp(1000*integral*time(t));
             end
             %
             figure;

@@ -75,7 +75,7 @@ for i = 1:size(equilibrium_points, 2)
     end
     MU = real(mu_matrix_L2); %remove numerical complex error
     idx_threshold = find(MU<1e-2 & MU>-1e-2); %linear indexing
-    mat_P_morm_mu0 = mat_P_norm(idx_threshold);
+    mat_P_morm_mu0 = mat_P_norm(idx_threshold); % only the places where mu=0 (approximetly) 
     min_dist = min(mat_P_morm_mu0(:));
 
     figure(1)
@@ -100,8 +100,8 @@ for i = 1:size(equilibrium_points, 2)
 
 
     %%simulate the one gen model
-    w_array = linspace(49.9*2*pi,50.1*2*pi,4);
-    d_0_array = linspace(0,0.4*pi,4);
+    w_array = linspace(49.9*2*pi,50.1*2*pi,3);
+    d_0_array = linspace(0,0.4*pi,3);
     for ij = 1:length (w_array)
         for ii = 1:length(d_0_array)
             w_0 = w_array(ij);
@@ -129,16 +129,18 @@ for i = 1:size(equilibrium_points, 2)
             for t = 1:length(time)
                 integral = 0;
                 for t_in = 1:t
-                    [~,idx_d2] = min(abs(d2_sim(t_in)-d2));
-                    [~,idx_w] = min(abs(w_sim(t_in)-w));
+                    [~,idx_d2] = min(abs(d2_sim(t_in)-d2)); % index of the d2 end point
+                    [~,idx_w] = min(abs(w_sim(t_in)-w)); % index pf the w end point
                     if (t_in ~=1)
-                    [~,idx] = min(norm_P(norm_P>0));    
-                    integral = integral + (time(t_in)-time(t_in-1))*200*(MU(idx_w,idx_d2)-MU(idx_w_prev,idx_d2_prev));
+                    temp_vec_dist = P_final *[w_sim(t_in)-w_sim(t_in-1);d2_sim(t_in)-d2_sim(t_in-1)];
+                    route_dist = norm(temp_vec_dist);
+                    MU_dist = MU(idx_w,idx_d2)-MU(idx_w_prev,idx_d2_prev);
+                    integral = integral + route_dist*MU_dist;
                     end
-                    idx_w_prev = idx_w;
-                    idx_d2_prev = idx_d2;
+                    idx_w_prev = idx_w; % index fow the w starting point gor next time
+                    idx_d2_prev = idx_d2;  % index fow the w starting point gor next time
                 end
-                e_time(t) = norm_P(1)*exp(integral*time(t));
+                e_time(t) = norm_P(1)*exp(1000*integral*time(t));
             end
             %
             figure;
