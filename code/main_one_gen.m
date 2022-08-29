@@ -134,13 +134,13 @@ for i = 1:size(equilibrium_points, 2)
                     if (t_in ~=1)
                     temp_vec_dist = P_final *[w_sim(t_in)-w_sim(t_in-1);d2_sim(t_in)-d2_sim(t_in-1)];
                     route_dist = norm(temp_vec_dist);
-                    MU_dist = MU(idx_w,idx_d2)-MU(idx_w_prev,idx_d2_prev);
-                    integral = integral + route_dist*MU_dist;
+                    MU_avg = (MU(idx_w,idx_d2)+MU(idx_w_prev,idx_d2_prev))/2;
+                    integral = integral + route_dist*MU_avg;
                     end
                     idx_w_prev = idx_w; % index fow the w starting point gor next time
                     idx_d2_prev = idx_d2;  % index fow the w starting point gor next time
                 end
-                e_time(t) = norm_P(1)*exp(1000*integral*time(t));
+                e_time(t) = norm_P(1)*exp(integral*time(t));
             end
             %
             figure;

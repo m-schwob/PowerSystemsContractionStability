@@ -94,7 +94,7 @@ ylabel('omega 1 [Hz]')
 title('Areas where \mu <0')
 hold off;
 
-%
+%{
 figure (2);
 hold on;
 surf(w1_dist/(2*pi),w2_dist/(2*pi),d2_dist/pi);
@@ -142,14 +142,14 @@ for ij = 1:length (w1_array)
                     if (t_in ~=1)
                     temp_vec_dist = P_final *[w1_sim(t_in)-w1_sim(t_in-1);w2_sim(t_in)-w2_sim(t_in-1);d2_sim(t_in)-d2_sim(t_in-1)];
                     route_dist = norm(temp_vec_dist);
-                    MU_dist = MU(idx_w1,idx_w1,idx_d2)-MU(idx_w1_prev,idx_w2_prev,idx_d2_prev);
-                    integral = integral + route_dist*MU_dist;
+                    MU_avg = (MU(idx_w1,idx_w1,idx_d2)+MU(idx_w1_prev,idx_w2_prev,idx_d2_prev))/2;
+                    integral = integral + route_dist*MU_avg;
                     end
                     idx_w1_prev = idx_w1; % index fow the w starting point gor next time
                     idx_w2_prev = idx_w2; % index fow the w starting point gor next time
                     idx_d2_prev = idx_d2;  % index fow the w starting point gor next time
                 end
-                e_time(t) = norm_P(1)*exp(1000*integral*time(t));
+                e_time(t) = norm_P(1)*exp(integral*time(t));
             end
             %
             figure;
