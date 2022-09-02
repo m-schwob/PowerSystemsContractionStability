@@ -24,6 +24,10 @@ t_max_step = 0.01;
 % define resolutions
 w_res = 0.01;
 d2_res = 0.01;
+w_bounds = [49.9*2*pi,50.1*2*pi];
+d2_bounds = [0,0.4*pi];
+num_of_d2_points = 6;
+num_of_w_points = 6;
 
 % define Jacobian formula
 J = @(d) [ -K / D, -3 * K * a_21 * cos(d);1 0]; % (w,d)
@@ -61,8 +65,8 @@ for i = 1:size(equilibrium_points, 2)
 
     % 6. Find the square root of the result of lyap using sqrtm. The transformation we will use to define the weighted Euclidean norm is the inverse of the square root.
     T = sqrtm(P);
-    P_final = T^-1;
-    A = @(d) (T^(-1) * J(d) * T);
+    P_final = T^(-1);
+    A = @(d) (P_final * J(d) * P_final^(-1));
     mat_P_norm = zeros(len_x,len_y);
     mu_matrix_L2 = mat_P_norm;
     temp_mat = zeros(2);
@@ -75,7 +79,7 @@ for i = 1:size(equilibrium_points, 2)
     end
     MU = real(mu_matrix_L2); %remove numerical complex error
     idx_threshold = find(MU<1e-2 & MU>-1e-2); %linear indexing
-    mat_P_morm_mu0 = mat_P_norm(idx_threshold); % only the places where mu=0 (approximetly) 
+    mat_P_morm_mu0 = mat_P_norm(idx_threshold); % only the places where mu=0 (approximetly)
     min_dist = min(mat_P_morm_mu0(:));
 
     figure(1)
@@ -100,12 +104,12 @@ for i = 1:size(equilibrium_points, 2)
 
 
     %%simulate the one gen model
-    w_array = linspace(49.9*2*pi,50.1*2*pi,3);
-    d_0_array = linspace(0,0.4*pi,3);
+    w_array = linspace(w_bounds(1),w_bounds(2),num_of_w_points);
+    d2_array = linspace(d2_bounds(1),d2_bounds(2),num_of_d2_points);
     for ij = 1:length (w_array)
-        for ii = 1:length(d_0_array)
+        for ii = 1:length(d2_array)
             w_0 = w_array(ij);
-            d_0 = d_0_array(ii);
+            d_0 = d2_array(ii);
             [w_sim,d2_sim,time] = one_gen_model_sim;
 
             %plot all the signals in the same plot
@@ -124,9 +128,26 @@ for i = 1:size(equilibrium_points, 2)
                 temp_mat = P_final*[w_sim(in)-w_eq;d2_sim(in)-d2_eq];
                 norm_P(in) = norm(temp_mat);
             end
+            % remove all the places where norm_P<=0:
+            norm_P = norm_P(norm_P>0);
+            time = time(norm_P>0);
             %calculate the bound
             e_time = 0*time;
+            start_dist = norm_P(1);
             for t = 1:length(time)
+                idx_to_find_max = find(mat_P_norm<start_dist); %linear indexing
+                etha = max(MU(idx_to_find_max));
+                if (etha>0) % if etha>0 then etha doesn't mean anything 
+                    % and we need  to prove that the graph is not bounded
+                    % by a descending exponent
+                    final_dist = min(norm_P);
+                    final_time = time(end);
+                    e_time(t) = (final_dist-start_dist)*time(t)/final_time + start_dist;
+                else
+                    e_time(t) = start_dist*exp(etha*time(t));
+                end
+                
+                %{
                 integral = 0;
                 for t_in = 1:t
                     [~,idx_d2] = min(abs(d2_sim(t_in)-d2)); % index of the d2 end point
@@ -138,9 +159,9 @@ for i = 1:size(equilibrium_points, 2)
                     integral = integral + route_dist*MU_avg;
                     end
                     idx_w_prev = idx_w; % index fow the w starting point gor next time
-                    idx_d2_prev = idx_d2;  % index fow the w starting point gor next time
+                    idx_d2_prev = idx_d2;  % index fow the w starting point gor next time  
                 end
-                e_time(t) = norm_P(1)*exp(integral*time(t));
+                %}
             end
             %
             figure;
@@ -149,7 +170,6 @@ for i = 1:size(equilibrium_points, 2)
             plot (time,e_time)
             xlabel ('time')
             ylabel ('P norm of distance to eq. point')
-            xlim ([0,10]);
             legend ('data','exponent')
             title(['start point w=',num2str(w_sim(1)/(2*pi)),'Hz, d2=',num2str(d2_sim(1)/pi),'rad/\pi'])
             hold off
@@ -159,7 +179,7 @@ for i = 1:size(equilibrium_points, 2)
             exp_smaller_than_norm = e_time<norm_P;
             figure(1)
             hold on
-            
+
             if (sum(exp_smaller_than_norm)>0)
                 scatter(d_0/pi,w_0/(2*pi),'rx');
             else
