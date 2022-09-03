@@ -30,6 +30,12 @@ t_max_step = 0.01;
 w1_res = 0.1;
 w2_res = 0.1;
 d2_res = 0.1;
+w1_bounds = [49.7*2*pi,50.3*2*pi];
+w2_bounds = [49.7*2*pi,50.3*2*pi];
+d2_bounds = [-0.4*pi,0.4*pi];
+num_of_d2_points = 5;
+num_of_w1_points = 5;
+num_of_w2_points = 5;
 
 % define Jacobian formula
 J = @(d2) [-K1/D1, 0, 3 * K1 * a_21 * cos(d2);
@@ -46,13 +52,13 @@ len_z = length(d2);
 %  ALGORITHM  %
 
 % run one sim to find the equalibriom point
-w1_array = linspace(49.9*2*pi,50.1*2*pi,3);
-w2_array = linspace(49.9*2*pi,50.1*2*pi,3);
-d2_0_array = linspace(0,0.4*pi,3);
+w1_array = linspace(w1_bounds(1),w1_bounds(2),num_of_w1_points);
+w2_array = linspace(w2_bounds(1),w2_bounds(2),num_of_w2_points);
+d2_array = linspace(d2_bounds(1),d2_bounds(2),num_of_d2_points);
 
 w1_0 = w1_array(1);
 w2_0 = w2_array(1);
-d2_0 = d2_0_array(1);
+d2_0 = d2_array(1);
 [~,~,~,~,w1_eq,w2_eq,d2_eq] = two_gen_model_sim;
 J_eq = J(d2_eq);
 
@@ -61,7 +67,7 @@ Q = eye(3);
 P = lyap(J_eq, Q);
 T = sqrtm(P);
 P_final = T^-1;
-A = @(d) (T^(-1) * J(d) * T);
+A = @(d) (P_final * J(d) * P_final^(-1));
 mat_P_norm = zeros(len_x,len_y,len_z);
 mu_matrix_L2 = mat_P_norm;
 temp_mat = zeros(3);
@@ -75,7 +81,8 @@ for x = 1:len_x
     end
 end
 MU = real(mu_matrix_L2); %remove numerical complex error
-MU_2d = squeeze(MU(1,:,:));
+MU_2d = squeeze(MU(:,1,:)); % only w1 and d2
+mat_P_norm_2d = squeeze(mat_P_norm(:,1,:));
 idx_threshold = find(MU<1e-1 & MU>-1e-1); %linear indexing
 mat_P_morm_mu0 = mat_P_norm(idx_threshold);
 min_dist = min(mat_P_morm_mu0(:));
@@ -83,21 +90,24 @@ idx_to_dist = find(mat_P_norm<=min_dist);
 [idx_x,idx_y,idx_z] = ind2sub([len_x,len_y,len_z],idx_to_dist);
 w1_dist = w1(idx_x);
 w2_dist = w2(idx_y);
-[~,d2_dist] = meshgrid(d2(idx_z),d2(idx_z)); % i think this is the problem in figure 2 (Nina)
-
+d2_dist = d2(idx_z);
+a = linspace(0,100,length(d2_dist));
 figure(1)
 hold on;
 contourf(d2/pi,w1/(2*pi),-MU_2d, [0,0],'red');
+contour(d2/pi, w1/(2*pi), mat_P_norm_2d, [min_dist,min_dist],'red')
 scatter(d2_eq/pi,w1_eq/(2*pi),'*')
 xlabel('delta 2 [rad/\pi]')
 ylabel('omega 1 [Hz]')
 title('Areas where \mu <0')
 hold off;
 
-%{
+%
 figure (2);
 hold on;
-surf(w1_dist/(2*pi),w2_dist/(2*pi),d2_dist/pi);
+%surf(w1_dist/(2*pi),w2_dist/(2*pi),d2_dist/pi);
+scatter3(w1_dist/(2*pi),w2_dist/(2*pi),d2_dist/pi,10,a,".")
+colorbar;
 zlabel('delta 2 [rad/\pi]')
 ylabel('omega 2 [Hz]')
 xlabel('omega 1 [Hz]')
@@ -105,12 +115,19 @@ title('Areas where the distance in P tem is less than the minimal distance to th
 %}
 
 % run the rest of the simulations
-for ij = 1:length (w1_array)
-    for ii = 1:length(d2_0_array)
+for ij = 1:length(w1_array)
+    for ii = 1:length(d2_array)
         for ik = 1:length(w2_array)
             w1_0 = w1_array(ij);
             w2_0 = w2_array(ik);
-            d2_0 = d2_0_array(ii);
+            d2_0 = d2_array(ii);
+            dist_matrix = P_final*[w1_0-w1_eq;w2_0-w2_eq;d2_0-d2_eq];
+            P_norm_0 = norm(dist_matrix);
+            if (P_norm_0<min_dist)
+                shape = 'o';
+            else
+                shape = 'diamond';
+            end
             [w1_sim,w2_sim,d2_sim,time,w1_eq_sim,w2_eq_sim,d2_eq_sim] = two_gen_model_sim;
             % TODO chek eq is eq
 
@@ -131,9 +148,26 @@ for ij = 1:length (w1_array)
                 temp_mat = P_final*[w1_sim(in)-w1_eq;w2_sim(in)-w2_eq;d2_sim(in)-d2_eq];
                 norm_P(in) = norm(temp_mat);
             end
+            % remove all the places where norm_P<=0:
+            norm_P = norm_P(norm_P>0);
+            time = time(norm_P>0);
             %calculate the bound
             e_time = 0*time;
+            start_dist = norm_P(1);
             for t = 1:length(time)
+                idx_to_find_max = find(mat_P_norm<start_dist); %linear indexing
+                etha = max(MU(idx_to_find_max));
+                if (etha>0) % if etha>0 then etha doesn't mean anything
+                    % and we need  to prove that the graph is not bounded
+                    % by a descending exponent
+                    final_dist = min(norm_P);
+                    final_time = time(end);
+                    e_time(t) = (final_dist-start_dist)*time(t)/final_time + start_dist;
+                else
+                    e_time(t) = start_dist*exp(etha*time(t));
+                end
+
+                %{
                 integral = 0;
                 for t_in = 1:t
                     [~,idx_d2] = min(abs(d2_sim(t_in)-d2)); % index of the d2 end point
@@ -149,9 +183,9 @@ for ij = 1:length (w1_array)
                     idx_w2_prev = idx_w2; % index fow the w starting point gor next time
                     idx_d2_prev = idx_d2;  % index fow the w starting point gor next time
                 end
-                e_time(t) = norm_P(1)*exp(integral*time(t));
+                %}
             end
-            %
+            %{
             figure;
             hold on;
             plot (time,norm_P)
@@ -166,13 +200,14 @@ for ij = 1:length (w1_array)
 
             %check if the exponnent is smaller than the calculated norm
             exp_smaller_than_norm = e_time<norm_P;
-            figure(1)
-            hold on
             if (sum(exp_smaller_than_norm)>0)
-                scatter(d2_0/pi,w1_0/(2*pi),'rx');
+                color = 'red';
             else
-                scatter (d2_0/pi,w1_0/(2*pi),'gx');
+                color = 'green';
             end
+            figure(2)
+            hold on
+            scatter3(w1_0/(2*pi),w2_0/(2*pi),d2_0/pi,50,color,'filled',shape);
         end
     end
 end
