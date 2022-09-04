@@ -124,9 +124,9 @@ for ij = 1:length(w1_array)
             dist_matrix = P_final*[w1_0-w1_eq;w2_0-w2_eq;d2_0-d2_eq];
             P_norm_0 = norm(dist_matrix);
             if (P_norm_0<min_dist)
-                shape = 'o';
+                in_area = true;
             else
-                shape = 'diamond';
+                in_area = false;
             end
             [w1_sim,w2_sim,d2_sim,time,w1_eq_sim,w2_eq_sim,d2_eq_sim] = two_gen_model_sim;
             % TODO chek eq is eq
@@ -141,8 +141,8 @@ for ij = 1:length(w1_array)
             zlabel ('delta 2 [rad/\pi]')
             %xlim ([-2,2]);
             %ylim([46,54]);
+            
             %plot distance in P terms
-
             norm_P = 0*w1_sim;
             for in = 1:length(w1_sim)
                 temp_mat = P_final*[w1_sim(in)-w1_eq;w2_sim(in)-w2_eq;d2_sim(in)-d2_eq];
@@ -207,7 +207,11 @@ for ij = 1:length(w1_array)
             end
             figure(2)
             hold on
-            scatter3(w1_0/(2*pi),w2_0/(2*pi),d2_0/pi,50,color,'filled',shape);
+            if(in_area)
+                scatter3(w1_0/(2*pi),w2_0/(2*pi),d2_0/pi,20,color,'filled','o');
+            else
+                scatter3(w1_0/(2*pi),w2_0/(2*pi),d2_0/pi,20,color,'+');
+            end
         end
     end
 end
