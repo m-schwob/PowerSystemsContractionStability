@@ -129,7 +129,6 @@ for ij = 1:length(w1_array)
                 in_area = false;
             end
             [w1_sim,w2_sim,d2_sim,time,w1_eq_sim,w2_eq_sim,d2_eq_sim] = two_gen_model_sim;
-            % TODO chek eq is eq
 
             %plot all the signals in the same plot
             figure (3);
@@ -139,9 +138,7 @@ for ij = 1:length(w1_array)
             xlabel ('omega 1 [Hz]')
             ylabel ('omega 2 [Hz]')
             zlabel ('delta 2 [rad/\pi]')
-            %xlim ([-2,2]);
-            %ylim([46,54]);
-            
+
             %plot distance in P terms
             norm_P = 0*w1_sim;
             for in = 1:length(w1_sim)
@@ -166,24 +163,6 @@ for ij = 1:length(w1_array)
                 else
                     e_time(t) = start_dist*exp(etha*time(t));
                 end
-
-                %{
-                integral = 0;
-                for t_in = 1:t
-                    [~,idx_d2] = min(abs(d2_sim(t_in)-d2)); % index of the d2 end point
-                    [~,idx_w1] = min(abs(w1_sim(t_in)-w1)); % index pf the w1 end point
-                    [~,idx_w2] = min(abs(w2_sim(t_in)-w2)); % index pf the w2 end point
-                    if (t_in ~=1)
-                    temp_vec_dist = P_final *[w1_sim(t_in)-w1_sim(t_in-1);w2_sim(t_in)-w2_sim(t_in-1);d2_sim(t_in)-d2_sim(t_in-1)];
-                    route_dist = norm(temp_vec_dist);
-                    MU_avg = (MU(idx_w1,idx_w1,idx_d2)+MU(idx_w1_prev,idx_w2_prev,idx_d2_prev))/2;
-                    integral = integral + route_dist*MU_avg;
-                    end
-                    idx_w1_prev = idx_w1; % index fow the w starting point gor next time
-                    idx_w2_prev = idx_w2; % index fow the w starting point gor next time
-                    idx_d2_prev = idx_d2;  % index fow the w starting point gor next time
-                end
-                %}
             end
             %{
             figure;
@@ -199,8 +178,9 @@ for ij = 1:length(w1_array)
             %}
 
             %check if the exponnent is smaller than the calculated norm
-            exp_smaller_than_norm = e_time<norm_P;
-            if (sum(exp_smaller_than_norm)>0)
+            exp_minus_norm = e_time-norm_P;
+            exp_smaller_than_norm = any(exp_minus_norm<-1e-15);
+            if (exp_smaller_than_norm)
                 color = 'red';
             else
                 color = 'green';
