@@ -1,0 +1,21 @@
+\documentclass{standalone}
+
+\usepackage{tikz_preamble}
+
+\begin{document}
+
+\begin{tikzpicture}
+
+\draw 
+    (0,0) \generator{V1}{$v_1=|E|\angle0^\circ$}{}{Generator 1}{}  (V1.south) 
+    to ++(1,0) \bus{1.5}{0.125}{1} coordinate (t)
+    ++(0,-0.5) to ++(-0.5,0) \load{$P_1$}
+    (t) to [generic,l_={$jX_s$}] ++(3,0) \bus{1.5}{0.125}{2} coordinate (t)
+    ++(0,-0.5) to ++(0.5,0) \load{$P_2$}
+    (t) ++(1.5,0) \generator{V2}{$v_2=|E|\angle\delta_2$}{}{}{Generator 2}
+    (t) to (V2.north)
+    ;
+
+\end{tikzpicture}
+
+\end{document}
