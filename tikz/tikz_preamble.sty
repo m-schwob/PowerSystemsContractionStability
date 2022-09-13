@@ -1,0 +1,55 @@
+\ProvidesPackage{tikz_preamble}
+
+%%%% TIKZ %%%%
+
+%general tikz drawing
+\usepackage{tikz}
+\usepackage{standalone}	%use to add standalone tikz picture tex file
+%for easy coordinates calculation
+\usepackage{calc}
+\usetikzlibrary{calc}
+\usetikzlibrary{arrows}
+%for drawing angles easly
+%\usepackage{tkz-euclide} commpile collision with 'tikz-network'
+%\usetkzobj{all} compile issue
+
+%\usepackage{tikz-network} %for graph drawing
+%for electronic circuits via tikz. siunitx is package for units.
+\usepackage[american,siunitx]{circuitikz}
+\ctikzset{cute inductors}
+
+
+%source(modified): https://tex.stackexchange.com/questions/597643/draw-a-power-system-network/597815#597815
+\newcommand{\bus}[3]{% length, offset (down), number
+    % optional arguments do not work in paths
+    % save the position
+    coordinate(tmp)
+    ++(0,#1*0.5-#2) node[draw,circle,inner sep=1pt,outer sep=2pt, above, font=\footnotesize]{#3} 
+    edge[ultra thick] ++(0,{-2*#1*0.5-#2}) 
+    % go back to where we started
+    (tmp)
+}
+
+\newcommand{\generator}[5]{% name, text above, text below, text left, text right
+    % optional arguments do not work in paths
+    % save the position
+    coordinate(tmp)
+    node[vsourcesinshape, rotate=90](#1){} 
+    % texts
+    (#1.east) node[above]{#2}
+    (#1.west) node[below]{#3}
+    (#1.north) node[left]{#4}
+    (#1.south) node[right]{#5}
+    (tmp)
+}
+
+\newcommand{\load}[1]{% text below
+    % optional arguments do not work in paths
+    % save the position
+    coordinate(tmp)
+    edge [-triangle 90] ++(0,-0.6)
+    % text
+    ++(0,-0.5) node [below,outer sep=2pt]{#1}
+    (tmp)
+}
+
