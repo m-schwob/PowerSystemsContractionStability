@@ -2,7 +2,6 @@ close all;
 clear;
 clc;
 
-%%
 
 a = 2.5772;
 b = 1.0266;
