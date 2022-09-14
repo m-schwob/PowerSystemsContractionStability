@@ -26,8 +26,8 @@ assert(((a * d - b * c) ~= 0), "matrix must be inversable");
 figure;
 XYlim = [-4, 4];
 linesize = 15;
-ledgendstyle = {'Location', 'northwest', 'FontSize', 12, 'Interpreter', 'latex'};
-titlestyle = {'fontweight', 'bold', 'fontsize', 16, 'Interpreter', 'latex'};
+ledgendstyle = {'Location', 'northwest', 'FontSize', 14, 'Interpreter', 'latex'};
+titlestyle = {'fontweight', 'bold', 'fontsize', 18, 'Interpreter', 'latex'};
 
 X2 = plotUnitNorm('2');
 X2t = A * X2;
@@ -36,7 +36,7 @@ subplot(132); hold on; axis equal;
 scatter(X2(1, :), X2(2, :), linesize, '.');
 scatter(X2t(1, :), X2t(2, :), linesize, '.');
 title('$L_2$', titlestyle{:});
-legend('$|x|_{L_2}=1$', '$|Ax|_{L_2}=1$', ledgendstyle{:});
+legend('$|x|_{L_2}=1$', '$|Tx|_{L_2}=1$', ledgendstyle{:});
 set(gca, 'XLim', XYlim, 'YLim', XYlim);
 
 X1 = plotUnitNorm('1');
@@ -46,7 +46,7 @@ subplot (131); hold on; axis equal;
 scatter(X1(1, :), X1(2, :), linesize, '.');
 scatter(X1t(1, :), X1t(2, :), linesize, '.');
 title('$L_1$', titlestyle{:});
-legend('$|x|_{L_1}=1$', '$|Ax|_{L_1}=1$', ledgendstyle{:});
+legend('$|x|_{L_1}=1$', '$|Tx|_{L_1}=1$', ledgendstyle{:});
 set(gca, 'XLim', XYlim, 'YLim', XYlim);
 
 Xinf = plotUnitNorm('inf');
@@ -56,7 +56,7 @@ subplot (133); hold on; axis equal;
 scatter(Xinf(1, :), Xinf(2, :), linesize, '.');
 scatter(Xinft(1, :), Xinft(2, :), linesize, '.');
 title('$L_\infty$', titlestyle{:});
-legend('$|x|_{L_\infty}=1$', '$|Ax|_{L_\infty}=1$', ledgendstyle{:});
+legend('$|x|_{L_\infty}=1$', '$|Tx|_{L_\infty}=1$', ledgendstyle{:});
 set(gca, 'XLim', XYlim, 'YLim', XYlim);
 
 pos = get(gcf, 'Position');
