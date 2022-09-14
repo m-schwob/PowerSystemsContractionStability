@@ -1,4 +1,4 @@
-clear; close all; clc;
+clear; clc;
 %  SYSTEM DEFINITIONS  %
 
 % define system constants
@@ -33,9 +33,9 @@ d2_res = 0.1;
 w1_bounds = [49.7*2*pi,50.3*2*pi];
 w2_bounds = [49.7*2*pi,50.3*2*pi];
 d2_bounds = [-0.4*pi,0.4*pi];
-num_of_d2_points = 5;
-num_of_w1_points = 5;
-num_of_w2_points = 5;
+num_of_d2_points = 6;
+num_of_w1_points = 6;
+num_of_w2_points = 6;
 
 % define Jacobian formula
 J = @(d2) [-K1/D1, 0, 3 * K1 * a_21 * cos(d2);
@@ -66,8 +66,8 @@ J_eq = J(d2_eq);
 Q = eye(3);
 P = lyap(J_eq, Q);
 T = sqrtm(P);
-P_final = T^-1;
-A = @(d) (P_final * J(d) * P_final^(-1));
+T_final = T^-1; % matlab uses a different lyapunov eq
+A = @(d) (T_final * J(d) * T_final^(-1));
 mat_P_norm = zeros(len_x,len_y,len_z);
 mu_matrix_L2 = mat_P_norm;
 temp_mat = zeros(3);
@@ -75,7 +75,7 @@ for x = 1:len_x
     for y = 1:len_y
         for z = 1:len_z
             mu_matrix_L2(x,y,z) = matmis(A(d2(z)),'L2');
-            temp_mat = P_final*[w1(x)-w1_eq;w2(y)-w2_eq;d2(z)-d2_eq];
+            temp_mat = T_final*[w1(x)-w1_eq;w2(y)-w2_eq;d2(z)-d2_eq];
             mat_P_norm(x,y,z) = norm(temp_mat);
         end
     end
@@ -92,6 +92,7 @@ w1_dist = w1(idx_x);
 w2_dist = w2(idx_y);
 d2_dist = d2(idx_z);
 a = linspace(0,100,length(d2_dist));
+%{
 figure(1)
 hold on;
 contourf(d2/pi,w1/(2*pi),-MU_2d, [0,0],'red');
@@ -101,17 +102,16 @@ xlabel('delta 2 [rad/\pi]')
 ylabel('omega 1 [Hz]')
 title('Areas where \mu <0')
 hold off;
+%}
 
 %
 figure (2);
 hold on;
-%surf(w1_dist/(2*pi),w2_dist/(2*pi),d2_dist/pi);
-scatter3(w1_dist/(2*pi),w2_dist/(2*pi),d2_dist/pi,10,a,".")
-colorbar;
+scatter3(w1_dist/(2*pi),w2_dist/(2*pi),d2_dist/pi,40,a,"o","filled",'MarkerFaceAlpha',.2,'MarkerEdgeAlpha',0)
 zlabel('delta 2 [rad/\pi]')
 ylabel('omega 2 [Hz]')
 xlabel('omega 1 [Hz]')
-title('Areas where the distance in P tem is less than the minimal distance to the line where \mu=0')
+title({'Areas where the distance in T term', 'is less than the minimal distance to the line where \mu=0'})
 %}
 
 % run the rest of the simulations
@@ -121,7 +121,7 @@ for ij = 1:length(w1_array)
             w1_0 = w1_array(ij);
             w2_0 = w2_array(ik);
             d2_0 = d2_array(ii);
-            dist_matrix = P_final*[w1_0-w1_eq;w2_0-w2_eq;d2_0-d2_eq];
+            dist_matrix = T_final*[w1_0-w1_eq;w2_0-w2_eq;d2_0-d2_eq];
             P_norm_0 = norm(dist_matrix);
             if (P_norm_0<min_dist)
                 in_area = true;
@@ -131,6 +131,7 @@ for ij = 1:length(w1_array)
             [w1_sim,w2_sim,d2_sim,time,w1_eq_sim,w2_eq_sim,d2_eq_sim] = two_gen_model_sim;
 
             %plot all the signals in the same plot
+            %
             figure (3);
             hold on
             grid on
@@ -138,11 +139,12 @@ for ij = 1:length(w1_array)
             xlabel ('omega 1 [Hz]')
             ylabel ('omega 2 [Hz]')
             zlabel ('delta 2 [rad/\pi]')
+            %}
 
             %plot distance in P terms
             norm_P = 0*w1_sim;
             for in = 1:length(w1_sim)
-                temp_mat = P_final*[w1_sim(in)-w1_eq;w2_sim(in)-w2_eq;d2_sim(in)-d2_eq];
+                temp_mat = T_final*[w1_sim(in)-w1_eq;w2_sim(in)-w2_eq;d2_sim(in)-d2_eq];
                 norm_P(in) = norm(temp_mat);
             end
             % remove all the places where norm_P<=0:
@@ -179,22 +181,22 @@ for ij = 1:length(w1_array)
 
             %check if the exponnent is smaller than the calculated norm
             exp_minus_norm = e_time-norm_P;
-            exp_smaller_than_norm = any(exp_minus_norm<-1e-15);
+            exp_smaller_than_norm = any(exp_minus_norm<-1e-3);
             if (exp_smaller_than_norm)
-                color = 'red';
-            else
-                color = 'green';
+                fprintf("exp smaller than norm")
             end
             figure(2)
             hold on
             if(in_area)
-                scatter3(w1_0/(2*pi),w2_0/(2*pi),d2_0/pi,20,color,'filled','o');
+                scatter3(w1_0/(2*pi),w2_0/(2*pi),d2_0/pi,30,'green','filled','o','MarkerEdgeColor','k');
             else
-                scatter3(w1_0/(2*pi),w2_0/(2*pi),d2_0/pi,20,color,'+');
+                scatter3(w1_0/(2*pi),w2_0/(2*pi),d2_0/pi,30,'red','*');
             end
         end
     end
 end
 figure(3)
-scatter3(w1_eq/(2*pi),w2_eq/(2*pi),d2_eq/pi,'ro');
+scatter3(w1_eq/(2*pi),w2_eq/(2*pi),d2_eq/pi,'green','filled','o');
+figure(2)
+scatter3(w1_eq/(2*pi),w2_eq/(2*pi),d2_eq/pi,40,'green','filled','diamond','MarkerEdgeColor','k');
 

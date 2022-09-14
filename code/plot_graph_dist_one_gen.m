@@ -1,10 +1,10 @@
-function plot_graph_dist_one_gen(w_0,d_0,P_final,w_eq,d2_eq,mat_P_norm,MU) 
+function plot_graph_dist_one_gen(w_0,d_0,T_final,w_eq,d2_eq,mat_P_norm,MU) 
 [w_sim,d2_sim,time] = one_gen_model_sim;
 
 %plot distance in P terms
 norm_P = 0*w_sim;
 for in = 1:length(w_sim)
-    temp_mat = P_final*[w_sim(in)-w_eq;d2_sim(in)-d2_eq];
+    temp_mat = T_final*[w_sim(in)-w_eq;d2_sim(in)-d2_eq];
     norm_P(in) = norm(temp_mat);
 end
 % remove all the places where norm_P<=0:
@@ -27,13 +27,12 @@ for t = 1:length(time)
 
 end
 %
-figure("Name",['start point w=',num2str(w_sim(1)/(2*pi)),'Hz, d2=',num2str(d2_sim(1)/pi),'rad/\pi']);
+figure(8);
 hold on;
-plot (time,norm_P)
-plot (time,e_time)
+plot (time,norm_P/norm_P(1))
+plot (time,e_time/norm_P(1))
 xlabel ('time')
-ylabel ('P norm of distance to eq. point')
-legend ('data','exponent')
+ylabel ('P norm of distance to eq. point (normalized)')
 title(['start point w=',num2str(w_sim(1)/(2*pi)),'Hz, d2=',num2str(d2_sim(1)/pi),'rad/\pi'])
 hold off
 end

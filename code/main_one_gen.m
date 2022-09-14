@@ -24,30 +24,30 @@ t_max_step = 0.01;
 % define resolutions
 w_res = 0.01;
 d2_res = 0.01;
-w_bounds = [49.6*2*pi,50.4*2*pi];
-d2_bounds = [-0.1*pi,0.6*pi];
-num_of_d2_points = 4;
-num_of_w_points = 4;
+w_bounds = [49*2*pi,51*2*pi];
+d2_bounds = [-0.1*pi,0.4*pi];
+num_of_d2_points = 5;
+num_of_w_points = 5;
 
 %define Q for lyaponuv
-%{
+%
 Q = [1,0;0,1];
 MU_lim = [-0.5e-2,0.5e-2];
 color = 'r';
-%
+%{
 Q = [2,-1;-1,2];
 MU_lim = [-0.5e-1,0.5e-1];
 color = 'c';
 %
-Q = [100,1;-1,1];
-MU_lim = [-0.5e-2,0.5e-2];
+Q = [100,1;1,1];
+MU_lim = [-0.5e-1,0.5e-1];
 color = 'g';
 %
-Q = [1000,0.1;-0.1,1];
+Q = [1000,0.1;0.1,1];
 MU_lim = [-0.5e-3,0.5e-3];
 color = 'b';
-%}
-Q = [100,1;-10,1];
+%
+Q = [100,9;9,10];
 MU_lim = [-1e-2,1e-2];
 color = 'm';
 %}
@@ -87,15 +87,15 @@ for i = 1:size(equilibrium_points, 2)
 
     % 6. Find the square root of the result of lyap using sqrtm. The transformation we will use to define the weighted Euclidean norm is the inverse of the square root.
     T = sqrtm(P);
-    P_final = T^(-1);
-    A = @(d) (P_final * J(d) * P_final^(-1));
+    T_final = T^(-1); % matlab uses a different lyapunov eq
+    A = @(d) (T_final * J(d) * T_final^(-1));
     mat_P_norm = zeros(len_x,len_y);
     mu_matrix_L2 = mat_P_norm;
     temp_mat = zeros(2);
     for x = 1:len_x
         for y = 1:len_y
             mu_matrix_L2(x,y) = matmis(A(d2(y)),'L2');
-            temp_mat = P_final*[w(x)-w_eq;d2(y)-d2_eq];
+            temp_mat = T_final*[w(x)-w_eq;d2(y)-d2_eq];
             mat_P_norm(x,y) = norm(temp_mat);
         end
     end
@@ -108,7 +108,7 @@ for i = 1:size(equilibrium_points, 2)
     hold on;
     contourf(d2/pi,w/(2*pi),-MU, [0,0],'red');
     scatter(d2_eq/pi,w_eq/(2*pi), '*')
-    contour(d2/pi, w/(2*pi), mat_P_norm, [min_dist,min_dist],'red');
+    contour(d2/pi, w/(2*pi), mat_P_norm, [min_dist,min_dist],'g');
     xlabel('delta 2 [rad/\pi]')
     ylabel('omega 1 [Hz]')
     title('Area where \mu <0')
@@ -120,9 +120,10 @@ for i = 1:size(equilibrium_points, 2)
     contour(d2/pi, w/(2*pi), mat_P_norm, [min_dist,min_dist],color);
     xlabel('delta 2 [rad/\pi]')
     ylabel('omega 1 [Hz]')
-    title('area limits')
+    title('Contraction Areas with Different Q Matrices')
     hold off;
 
+    %{
     figure (2);
     hold on;
     plot(d2/pi, MU(1,:));
@@ -132,7 +133,7 @@ for i = 1:size(equilibrium_points, 2)
     ylabel('matrix measure')
     title('the matrix measure of the jacovian in defferent angles')
     hold off;
-
+    %}
 
     %%simulate the one gen model
     w_array = linspace(w_bounds(1),w_bounds(2),num_of_w_points);
@@ -144,6 +145,7 @@ for i = 1:size(equilibrium_points, 2)
             [w_sim,d2_sim,time] = one_gen_model_sim;
 
             %plot all the signals in the same plot
+            %
             figure (3);
             hold on
             plot (d2_sim/pi,w_sim/(2*pi))
@@ -151,12 +153,12 @@ for i = 1:size(equilibrium_points, 2)
             xlabel ('delta 2 [rad/\pi]')
             %xlim ([-2,2]);
             %ylim([46,54]);
+            %}
 
             %plot distance in P terms
-
             norm_P = 0*w_sim;
             for in = 1:length(w_sim)
-                temp_mat = P_final*[w_sim(in)-w_eq;d2_sim(in)-d2_eq];
+                temp_mat = T_final*[w_sim(in)-w_eq;d2_sim(in)-d2_eq];
                 norm_P(in) = norm(temp_mat);
             end
             % remove all the places where norm_P<=0:
@@ -198,16 +200,19 @@ for i = 1:size(equilibrium_points, 2)
             figure(1)
             hold on
 
-            if (exp_smaller_than_norm)
-                scatter(d_0/pi,w_0/(2*pi),10,'r',shape);
+            if (shape == '+')
+                scatter(d_0/pi,w_0/(2*pi),6,'r',shape);
             else
-                scatter (d_0/pi,w_0/(2*pi),10,'g',shape);
+                scatter (d_0/pi,w_0/(2*pi),6,'g',shape);
             end
+
         end
     end
     figure(3)
     hold on
     scatter(d2_eq/pi,w_eq/(2*pi),'o')
+    contour(d2/pi, w/(2*pi), mat_P_norm, [min_dist,min_dist],color);
+   
 end
 
 function equilibrium_points = solve_power_flow()
